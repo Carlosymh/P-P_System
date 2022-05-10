@@ -1,0 +1,171 @@
+body{
+    background-color: #eee;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+
+    
+}
+section{
+    background: #01d4c7 ;
+    margin: 0;
+    padding: 0.1rem 0;
+    font-size: 3vh;
+    color: #fff;
+    height: 40vh;
+    display: flex;
+    justify-content: center;
+}
+section img{
+    width: 150px;
+    height: 75px;
+    margin-top: 30px;
+    right: 10px;
+}
+section h1{
+    text-align: left;
+    width: 80%;
+    font-size: 60px;
+    margin-top: 50px;
+    margin-left: 10px;
+    font-family: 'Harabara',Verdana;
+}
+
+.container{
+    position: relative;
+    margin: auto;
+    margin-top: -80px;
+    background: #fff;
+    width: 350px;
+    height: 225px;
+    display:flexbox;
+    box-shadow: 0 0 10px  #888;
+    border-top-right-radius: 5px;
+    border-top-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    text-align: center;
+}
+.container-validacion{
+    position: relative;
+    margin: auto;
+    margin-top: -15vh;
+    background: #fff;
+    width: 350px;
+    height: 300px;
+    display:flexbox;
+    box-shadow: 0 0 10px  #888;
+    border-radius: 5px;
+    text-align: center;
+}
+
+form{
+    width: 80%;
+    display: grid;
+    margin: auto;
+    align-items: center;
+    justify-content: center;
+
+}
+.container-validacion form div{
+
+    width: 95%;
+    height: 55px;
+    display: flex;
+    margin: auto;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px ;
+    box-shadow: 0 0 2px #000;
+    border-radius: 5px;
+    color: #01d4c7;
+    font-size: 25px;
+    margin-bottom: 10px;
+
+}
+
+.container-validacion form div p{
+    color: #01d4c7;
+    font-weight: bolder;
+
+}
+.container-validacion form div a {
+
+    color: #01d4c7;
+    text-decoration: none;
+    font-weight: bolder;
+    font-size: 20px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    padding: 5px;
+    box-shadow: 0 0 3px #01d4c7;
+    border-radius: 50% ;
+
+}
+
+.container-validacion form div a:hover {
+    background: #01d4c7;
+    color: #fff;
+    box-shadow: 0 0 3px #fff;
+
+}
+
+form p{
+    font-family: Verdana, Tahoma, sans-serif;
+    font-size: 20px;
+    color: #333;
+
+}
+
+form label{
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 2vh;
+    color: rgb(95, 92, 92);
+}
+
+input{
+    margin-bottom: 2.5vh;
+    margin-top: 1vh;
+    font-size: 2vh;
+}
+
+input.user_inicio{
+    margin-bottom: 2.5vh;
+    margin-top: 1vh;
+    font-size: 2vh;
+    padding: 2vh;
+    border-radius: 5px;
+    border:none;
+    outline: none;
+    box-shadow: 0 0 0.2vh #000;
+}
+input.user_inicio:focus{
+    box-shadow: 0 0 0.5vh #3483fa, 0 0 0.5vh #3483fa, 0 0 0.5vh #3483fa, 0 0 0.5vh #3483fa, 0 0 0.5vh #3483fa, 0 0 0.5vh #3483fa, 0 0 0.5vh #3483fa, 0 0 0.5vh #3483fa, 0 0 0.5vh #3483fa, 0 0 0.5vh #3483fa;
+}
+.btn{
+    font-family: Verdana, Tahoma, sans-serif;
+    width: 100%;
+    font-size: 2vh;
+    padding:2vh 1vh;
+    background: #3483fa;
+    color: #fff;
+    font-weight: bolder;
+    border:none;
+    border-radius: 5px;
+    margin: auto;
+    margin-bottom: 2vh;
+    transition: 0.5s;
+}
+
+.btn:hover{
+    font-family: Verdana, Tahoma, sans-serif;
+    width: 100%;
+    font-size: 2vh;
+    font-weight: bolder;
+    background: #256ad3;
+    color: #fff;
+    transition: 0.5s;
+}
+
+
