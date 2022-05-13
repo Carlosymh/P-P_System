@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response, Response, jsonify #pip install flask
 import io
 import csv
-import requests #pip install requests
 import json
 from sre_constants import SUCCESS
 import cv2 #pip install opencv-python-headless or pip install opencv-python
@@ -40,12 +39,28 @@ def Index():
     flash(str(error))
     return render_template('index.html')
 
+def _create_password(password):
+   return generate_password_hash(password,'pbkdf2:sha256:30',30)
+
 #Valida el Acceso a la Plataforma 
 @app.route('/inicio', methods=['POST'])
 def validarusuaro():
-    if request.method == 'POST':
-      usuario =  request.form['user']
-      return render_template('inicio.html',username=usuario,user=usuario)   
+  if request.method == 'POST':
+      usuario =  request.form['user'] 
+      link = connectBD()
+      db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
+      cur= db_connection.cursor()
+      sql = "SELECT * FROM `users` WHERE `User`=%s Limit 1"
+      cur.execute(sql, (usuario,))
+      # Read a single record
+      data = cur.fetchone()
+      cur.close()
+      if data :
+        username = data[1]
+        user = data[3]
+        return render_template('inicio.html',username=username,user=user)
+      else:
+        return render_template('index.html')
  
 @app.route('/cambiar', methods=['POST'])
 def cambiarfacility():
@@ -62,24 +77,29 @@ def cambiarfacility():
 def validarcontrasena(usuario):
   try:
     if request.method == 'POST':
-      clave = request.form['clave']
+      usuario =  usuario
+      password = request.form['clave']
       link = connectBD()
       db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
       cur= db_connection.cursor()
       sql = "SELECT * FROM `users` WHERE `User`=%s Limit 1"
       cur.execute(sql, (usuario,))
-      # Read a single record
+      # Read a single 
       data = cur.fetchone()
       cur.close()
-      if data != None :
-        session['UserName'] = data[1]
-        session['FullName'] = data[1] +" "+ data[2]
-        session['User'] = data[3]
-        session['SiteName'] = data[6]
-        session['Rango'] = data[5]
-        return redirect('/home')
-      else:
-        return redirect('/')
+      if data :
+        if check_password_hash(data[4],password):
+          session['UserName'] = data[1]
+          session['FullName'] = data[1] + data[2]
+          session['User'] = data[3]
+          session['SiteName'] = data[6]
+          session['Rango'] = data[5]
+          return redirect('/home')
+        else:
+          flash('Contraseña Incorrecta')
+          return redirect('/')
+    else:
+      return redirect('/')
   except Exception as error:
     flash(str(error))
     return redirect('/')
@@ -111,6 +131,19 @@ def packing():
     flash(str(error))
     return redirect('/') 
 
+#proceso de retiros
+@app.route('/Receiving',methods=['POST','GET'])
+def recdeiving():
+  try:
+    if 'FullName' in session:
+      return render_template('form/receiving.html',Datos = session)
+    else:
+      flash("Inicia Sesion")
+      return redirect('/')
+  except Exception as error:
+    flash(str(error))
+    return redirect('/') 
+
 #Redirigie a el Formulario de Registro de Usuarios 
 @app.route('/registro',methods=['POST','GET'])
 def registro():
@@ -126,7 +159,7 @@ def registro():
 
 @app.route('/RegistrarPacking',methods=['POST','GET'])
 def registroP():
-  try:
+  # try:
       if request.method == 'POST':
         deliveryday =  request.form['deliveryday']
         route =  request.form['route']
@@ -136,8 +169,8 @@ def registroP():
         db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
         cur= db_connection.cursor()
         # Read a single record
-        sql = "SELECT * FROM orders WHERE RouteName=%s AND DeliveryDate=%s AND NOT Status=%s AND Site=%s "
-        cur.execute(sql, (route,deliveryday,status,Site))
+        sql = "SELECT * FROM `orders` WHERE RouteName=%s AND DeliveryDate=%s AND NOT Status =%s "
+        cur.execute(sql, (route,deliveryday,status,))
         data = cur.fetchall()
         cur.close()
         if data :
@@ -145,13 +178,13 @@ def registroP():
         else:
           flash("No hay Ordenes Pendientes es esta ruta")
           return redirect('/Packing')
-  except Exception as error: 
-    flash(str(error))
-    return redirect('/Packing')
+  # except Exception as error: 
+  #   flash(str(error))
+  #   return redirect('/Packing')
 
 @app.route('/RegistroMovPacking/<route>/<deliveryday>',methods=['POST','GET'])
 def registroMovPacking(route,deliveryday):
-  # try:
+  try:
       if request.method == 'POST':
         print(route,deliveryday)
         ean =  request.form['ean']
@@ -217,109 +250,146 @@ def registroMovPacking(route,deliveryday):
           data2 = cur.fetchall()
           cur.close()
           return render_template('actualizacion/Scan.html',Datos =session, data=data2)
-  # except Exception as error: 
-  #   flash(str(error))
-  #   return redirect('/Packing')
+  except Exception as error: 
+    flash(str(error))
+    return redirect('/Packing')
 
-
-@app.route('/Api',methods=['POST','GET'])
-def api():
-  # try:
-      url="https://metabase.munitienda.com/public/question/e8e1234f-6818-430f-a6c8-86585cd4ef09.json"
-      response = requests.get(url)
-      if  response.status_code == 200:
-        content = response.json()
-      for row in content:
-        routeName= row['routeName']
-        FUName=row['FUName']
-        Service_Zone=row['Service_Zone']
-        fk_order= row['fk_order']
-        packer=row['packer']
-        FuOrder=row['FuOrder']
-        ean=row['ean']
-        operationGroup=row['operationGroup']
-        productName=row['productName']
-        type=row['type']
-        deliveryDate=row['deliveryDate']
-        originalQuantity=row['originalQuantity']
-        Vendor=row['Vendor']
-        CLid=row['CLid']
-        Stop=row['Stop']
-        currentQuantity=row['currentQuantity']
-        pendingQuantity=originalQuantity-currentQuantity
-        if OriginalQuantity==CurrentQuantity:
-          status= 'Finished'
-        elif CurrentQuantity>0 and PendingQuantity> 0:
-          status= 'In Process'
-        else:
-          status= 'Pendding'
+@app.route('/RegistrarReceiving',methods=['POST','GET'])
+def registrarReceiving():
+  try:
+      if request.method == 'POST':
+        deliveryday =  request.form['deliveryday']
+        route =  request.form['route']
+        Site =  session['SiteName']
+        status="Finished"
         link = connectBD()
         db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
         cur= db_connection.cursor()
         # Read a single record
-        sql = "SELECT * FROM orders WHERE RouteName=%s AND  Fk_order=%s AND FuOrder=%s AND Ean=%s  Limit 1 "
-        cur.execute(sql, (routeName,fk_order,FuOrder,ean))
-        data = cur.fetchone()
+        sql = "SELECT * FROM orders WHERE RouteName=%s AND DeliveryDate=%s AND NOT Status=%s AND Site=%s "
+        cur.execute(sql, (route,deliveryday,status,Site))
+        data = cur.fetchall()
         cur.close()
-        if data is None:
-          link = connectBD()
-          db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-          cur= db_connection.cursor()
-          # Create a new record
-          sql = "INSERT INTO orders (RouteName,FUName,Service_Zone,Fk_order,Packer,FuOrder,Ean,OperationGroup,ProductName,Type,DeliveryDate,OriginalQuantity,Vendor,CLid,Stop,CurrentQuantity,PendingQuantity,Status,Site) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-          cur.execute(sql,(routeName,FUName,Service_Zone,fk_order,packer,FuOrder,ean,operationGroup,productName,type,deliveryDate,originalQuantity,Vendor,CLid,Stop,currentQuantity,pendingQuantity,Status,session['SiteName'],))
-          # connection is not autocommit by default. So you must commit to save
-          # your changes.
-          db_connection.commit()
-          cur.close()
+        if data :
+          return render_template('actualizacion/Scan.html',Datos =session, data=data)
+        else:
+          flash("No hay Ordenes Pendientes es esta ruta")
+          return redirect('/Packing')
+  except Exception as error: 
+    flash(str(error))
+    return redirect('/Packing')
 
-  # except Exception as error: 
-  #   flash(str(error))
-  #   return render_template('registro.html',Datos =session)
+@app.route('/Api',methods=['POST','GET'])
+def api():
+  try:
+        url="https://metabase.munitienda.com/public/question/e8e1234f-6818-430f-a6c8-86585cd4ef09.json"
+        response = requests.get(url)
+        if  response.status_code == 200:
+          content = response.json()
+          for row in content:
+            routeName= row['routeName']
+            FUName=row['FUName']
+            Service_Zone=row['Service_Zone']
+            fk_order= row['fk_order']
+            packer=row['packer']
+            FuOrder=row['FuOrder']
+            ean=row['ean']
+            operationGroup=row['operationGroup']
+            productName=row['productName']
+            type=row['type']
+            deliveryDate=row['deliveryDate']
+            originalQuantity=row['originalQuantity']
+            Vendor=row['Vendor']
+            CLid=row['CLid']
+            Stop=row['Stop']
+            currentQuantity=row['currentQuantity']
+            pendingQuantity=originalQuantity-currentQuantity
+            if originalQuantity==currentQuantity:
+              status= 'Finished'
+            elif currentQuantity>0 and pendingQuantity> 0:
+              status= 'In Process'
+            else:
+              status= 'Pendding'
+            link = connectBD()
+            db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
+            cur= db_connection.cursor()
+            # Read a single record
+            sql = "SELECT * FROM orders WHERE RouteName=%s AND  Fk_order=%s AND FuOrder=%s AND Ean=%s  Limit 1 "
+            cur.execute(sql, (routeName,fk_order,FuOrder,ean))
+            data = cur.fetchone()
+            cur.close()
+            if data is None:
+              link = connectBD()
+              db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
+              cur= db_connection.cursor()
+              # Create a new record
+              sql = "INSERT INTO orders (RouteName,FUName,Service_Zone,Fk_order,Packer,FuOrder,Ean,OperationGroup,ProductName,Type,DeliveryDate,OriginalQuantity,Vendor,CLid,Stop,CurrentQuantity,PendingQuantity,Status,Site) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+              cur.execute(sql,(routeName,FUName,Service_Zone,fk_order,packer,FuOrder,ean,operationGroup,productName,type,deliveryDate,originalQuantity,Vendor,CLid,Stop,currentQuantity,pendingQuantity,status,session['SiteName'],))
+              # connection is not autocommit by default. So you must commit to save
+              # your changes.
+              db_connection.commit()
+              cur.close()
+            else:
+              link = connectBD()
+              db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
+              cur= db_connection.cursor()
+              # Create a new record
+              sql = "UPDATE orders SET CurrentQuantity = %s, PendingQuantity = %s, Status = %s, Packer = %s WHERE RouteName=%s AND  Fk_order=%s AND FuOrder=%s AND Ean=%s"
+              cur.execute(sql,(currentQuantity,pendingQuantity,status,packer,routeName,fk_order,FuOrder,ean,))
+              # connection is not autocommit by default. So you must commit to save
+              # your changes.
+              db_connection.commit()
+              cur.close()
+                
+          return redirect('/home')
 
+  except Exception as error: 
+    flash(str(error))
+    return redirect('/home')
 
-
-#Registro de Usuarios 
+#Registro de Usuarios
 @app.route('/registrar',methods=['POST'])
 def registrar():
   try:
       if request.method == 'POST':
-        nombre =  request.form['nombre']
-        apellido =  request.form['apellido']
-        rango = request.form['rango']
-        Facility =  request.form['ltrabajo']
-        Site = request.form['cdt']
-        usuario =  request.form['usuario']
-        link = connectBD()
-        db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-        cur= db_connection.cursor()
-        # Read a single record
-        sql = "SELECT * FROM `roles` WHERE `Usuario`=%s Limit 1"
-        cur.execute(sql, (usuario,))
-        data = cur.fetchone()
-        cur.close()
-        if data != None:
-          flash("El Usuario Ya Existe")
-          return render_template('registro.html',Datos =session)
-        else:
-          try:
+        FirstName =  request.form['FirstName']
+        LastName =  request.form['LastName']
+        User = request.form['User']
+        Access =  request.form['Access']
+        Site = request.form['Site']
+
+        password = _create_password(request.form['Password'])
+
+        if check_password_hash(password,request.form['Password']) and check_password_hash(password,request.form['ValidatePassword']):
+          link = connectBD()
+          db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
+          cur= db_connection.cursor()
+          sql = "SELECT * FROM users WHERE User=%s Limit 1"
+          cur.execute(sql, (User,))
+          # Read a single record
+          data = cur.fetchone()
+          cur.close()
+          if data:
+            flash("El Usuario Ya Existe")
+            return render_template('registro.html',Datos =session)
+          else:
             link = connectBD()
             db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
             cur= db_connection.cursor()
             # Create a new record
-            sql = "INSERT INTO roles (Nombre,Apellido, Usuario, facility, Site, Rango) VALUES (%s,%s,%s,%s,%s,%s)"
-            cur.execute(sql,(nombre,apellido,usuario,Facility,Site,rango,))
+            sql = "INSERT INTO users (FirstName,LastName,User,Password,Access,Site) VALUES (%s,%s,%s,%s,%s,%s)"
+            cur.execute(sql,(FirstName,LastName,User,password,Access,Site,))
             # connection is not autocommit by default. So you must commit to save
             # your changes.
             db_connection.commit()
             cur.close()
             flash("Registro Correcto")
-            return render_template('registro.html',Datos =session)
-          except Exception as error: 
-            flash(str(error))
-            return render_template('registro.html',Datos =session)
-  except Exception as error: 
-    flash(str(error))
+            return redirect('/registro')
+        else:
+          flash("Las Contraceñas no Cionciden")
+          return redirect('/registro')
+  except:
+    flash("Registro Fallido")
     return render_template('registro.html',Datos =session)
 
 # Registro de meli
@@ -330,141 +400,6 @@ def registro_s_s():
         DeliveryDate = request.form['DeliveryDate']
         Route = request.form['Route']
         return render_template('form/scan.html')
-  except Exception as error: 
-    flash(str(error))
-    return render_template('form/retiros.html',Datos = session)
-
-# Registro de Ubicacion
-@app.route('/RegistrarUbicacion/<meli>/<base>',methods=['POST'])
-def registro_ubicacion(meli,base):
-  try:
-      if request.method == 'POST':
-        ubicacion = request.form['Ubicacion']
-        if base == "Retiros":  
-          link = connectBD()
-          db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-          cur= db_connection.cursor()
-          # Read a single record
-          sql = "SELECT * FROM solicitud_retiros WHERE meli = %s AND status != \'Cerrado\' AND Site =%s LIMIT 1"
-          cur.execute(sql, (meli,session['SiteName']))
-          retiros = cur.fetchone()
-          if int(retiros[4]) > int(retiros[7]): 
-            numeroOla=retiros[1]
-            now= datetime.now()
-            responsable=session['FullName']
-            link = connectBD()
-            db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-            cur= db_connection.cursor()
-            # Create a new record
-            sql = "INSERT INTO retiros (nuemro_de_ola, meli, cantidad, ubicacion, responsable, fecha, fecha_hora,facility ,Site) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-            cur.execute(sql,(numeroOla,meli,1,ubicacion,responsable,now,now,session['FcName'],session['SiteName']))
-            # connection is not autocommit by default. So you must commit to save
-            # your changes.
-            db_connection.commit()
-            cur.close()
-            piesas= int(retiros[7])+1
-            idretiro =int(retiros[0])
-            if  piesas < int(retiros[4]):
-              status='En Proceso'
-            elif  piesas == int(retiros[4]):
-              status='Cerrado'
-            link = connectBD()
-            db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-            cur= db_connection.cursor()
-            # Create a new record
-            sql = "UPDATE solicitud_retiros SET cantidad_susrtida = %s, status = %s, ubicacion = %s WHERE id_tarea_retiros = %s"
-            cur.execute(sql,(piesas,status,ubicacion,idretiro,))
-            # connection is not autocommit by default. So you must commit to save
-            # your changes.
-            db_connection.commit()
-            cur.close()
-            session['ubicacionretiro']=ubicacion
-            return render_template('form/retiros.html',Datos = session)
-        elif base == "Donacion":
-          link = connectBD()
-          db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-          cur= db_connection.cursor()
-          # Read a single record
-          sql = "SELECT * FROM solicitud_donacion WHERE SKU = %s AND status != \'Cerrado\' AND Site =%s LIMIT 1 "
-          cur.execute(sql, (meli,session['SiteName']))
-          donacion = cur.fetchone()
-          if int(donacion[3]) > int(donacion[7]): 
-            numeroOla=donacion[1]
-            now= datetime.now()
-            responsable=session['FullName']
-            link = connectBD()
-            db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-            cur= db_connection.cursor()
-            # Create a new record
-            sql = "INSERT INTO donacion (nuemro_de_ola, SKU, cantidad, ubicacion, responsable, fecha, fecha_hora,facility ,Site) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-            cur.execute(sql,(numeroOla,meli,1,ubicacion,responsable,now,now,session['FcName'],session['SiteName']))
-            # connection is not autocommit by default. So you must commit to save
-            # your changes.
-            db_connection.commit()
-            cur.close()
-            piesas= int(donacion[7])+1
-            iddonacion =int(donacion[0])
-            if  piesas < int(donacion[3]):
-              status='En Proceso'
-            elif  piesas == int(donacion[3]):
-              status='Cerrado'
-            link = connectBD()
-            db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-            cur= db_connection.cursor()
-            # Create a new record
-            sql = "UPDATE solicitud_donacion SET cantidad_susrtida = %s, status = %s, ubicacion = %s WHERE id_donacion = %s"
-            cur.execute(sql,(piesas,status,ubicacion,iddonacion,))
-            # connection is not autocommit by default. So you must commit to save
-            # your changes.
-            db_connection.commit()
-            cur.close()
-            session['ubicacionretiro']=ubicacion
-            return render_template('form/retiros.html',Datos = session)
-        elif base == "rezagos":
-          link = connectBD()
-          db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-          cur= db_connection.cursor()
-          # Read a single record
-          sql = "SELECT * FROM ingram WHERE SKU = %s AND estatus != \'Cerrado\' AND Site =%s LIMIT 1 "
-          cur.execute(sql, (meli,session['SiteName']))
-          ingram = cur.fetchone()
-          if int(ingram[3]) > int(ingram[5]): 
-            numeroOla=ingram[1]
-            now= datetime.now() 
-            responsable=session['FullName']
-            link = connectBD()
-            db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-            cur= db_connection.cursor()
-            # Create a new record
-            sql = "INSERT INTO retirio_ingram (nuemro_de_ola, SKU, cantidad, ubicacion, responsable, fecha, fecha_hora,facility ,Site) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-            cur.execute(sql,(numeroOla,meli,1,ubicacion,responsable,now,now,session['FcName'],session['SiteName']))
-            # connection is not autocommit by default. So you must commit to save
-            # your changes.
-            db_connection.commit()
-            cur.close()
-            piesas= int(ingram[5])+1
-            idingram =int(ingram[0])
-            if  piesas < int(ingram[3]):
-              status='En Proceso'
-            elif  piesas == int(ingram[4]):
-              status='Cerrado'
-            link = connectBD()
-            db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-            cur= db_connection.cursor()
-            # Create a new record
-            sql = "UPDATE ingram SET piezas_surtidas = %s, estatus = %s, ubicacion = %s WHERE id_solicitud  = %s"
-            cur.execute(sql,(piesas,status,ubicacion,idingram,))
-            # connection is not autocommit by default. So you must commit to save
-            # your changes.
-            db_connection.commit()
-            cur.close()
-            session['ubicacionretiro']=ubicacion
-            return render_template('form/retiros.html',Datos = session)
-        flash("No hay Tareas Pendientes")
-        return render_template('form/retiros.html',Datos = session)
-      else:
-        flash("No has enviado un registro")
-        return render_template('form/retiros.html',Datos = session)
   except Exception as error: 
     flash(str(error))
     return render_template('form/retiros.html',Datos = session)
@@ -907,7 +842,6 @@ def Reporte_retiros(rowi):
     flash(str(error))
     return render_template('index.html')
 
-
 @app.route('/Reporte_donacion/<rowi>',methods=['POST','GET'])
 def Reporte_donacion(rowi):
   try:
@@ -1269,7 +1203,6 @@ def Reporte_donacion(rowi):
     flash(str(error))
     return render_template('index.html')
 
-
 @app.route('/Reporte_Ingram/<rowi>',methods=['POST','GET'])
 def Reporte_ingram(rowi):
   try:
@@ -1628,7 +1561,6 @@ def Reporte_ingram(rowi):
     flash(str(error))
     return render_template('index.html')
 
-
 @app.route('/csvretiros',methods=['POST','GET'])
 def crear_csvretiros():
   try:
@@ -1817,7 +1749,6 @@ def crear_csvdonacion():
     return response
   except Exception as error: 
     flash(str(error))
-
 
 @app.route('/csvingram',methods=['POST','GET'])
 def crear_ccsvingram():
@@ -2222,7 +2153,6 @@ def solicitudes_retiros(rowi):
     flash(str(error))
     return render_template('index.html')
 
-
 @app.route('/Solicitudes_donacion/<rowi>',methods=['POST','GET'])
 def solicitud_donacion(rowi):
   try:
@@ -2543,7 +2473,6 @@ def solicitud_donacion(rowi):
   except Exception as error: 
     flash(str(error))
     return render_template('index.html')
-
 
 @app.route('/Solicitudes_Ingram/<rowi>',methods=['POST','GET'])
 def solicitud_ingram(rowi):
@@ -2866,7 +2795,6 @@ def solicitud_ingram(rowi):
     flash(str(error))
     return render_template('index.html')
 
-
 @app.route('/csvsolicitudretiros',methods=['POST','GET'])
 def crear_csvsolicitudretiros():
   try:
@@ -2963,7 +2891,6 @@ def crear_csvsolicitudretiros():
     return response
   except Exception as error: 
     flash(str(error))
-
 
 @app.route('/csvsolicituddonacion',methods=['POST','GET'])
 def crear_csvsolicituddonacion():
@@ -3062,7 +2989,6 @@ def crear_csvsolicituddonacion():
   except Exception as error: 
     flash(str(error))
 
-
 @app.route('/csvsolicitudingram',methods=['POST','GET'])
 def crear_ccsvsolicitudingram():
   try:
@@ -3159,7 +3085,6 @@ def crear_ccsvsolicitudingram():
   except Exception as error: 
     flash(str(error))
 
-
 @app.route('/files',methods=['POST','GET'])
 def Files_():
   try:
@@ -3169,7 +3094,6 @@ def Files_():
       return redirect('/')
   except Exception as error: 
     flash(str(error))
-
 
 @app.route('/CargarDatos',methods=['POST','GET'])
 def uploadFiles():
@@ -3278,7 +3202,6 @@ def uploadFiles():
   except Exception as error:
     flash(str(error))
     return redirect('/files')
-
 
 @app.route('/scanercam',methods=['POST','GET'])
 def scancam():
@@ -3418,7 +3341,6 @@ def dash():
   except Exception as error:
     flash(str(error))
     return redirect('/')
-
     
 if __name__=='__main__':
     app.run(port = 3000, debug =True)
