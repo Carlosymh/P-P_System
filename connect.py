@@ -2,5 +2,5 @@
 def connectBD (): 
     host = "localhost"
     user = "root" 
-    db = "retiros_2"
+    db = "muni"
     return (host, user, db)

@@ -1,6 +1,8 @@
 *{
-    margin:0;
+    margin: 0;
+    padding: 0;
 }
+
 body{
     background: #eee;
 }
@@ -8,40 +10,33 @@ body{
     width: 100%;
 
 }
-.form-register{
-    width: 100%;
-    height: 90vh;
-    text-align: center;
-    align-items: center;
-    align-content: center;
-}
 
 .packing-form{
     width: 80%;
     max-width:350px;
-    height: 55%;
+    height: 40vh;
     margin: 60px auto auto auto ;
     background: #fff;
     box-shadow: 0 0 10px #aaa;
-    padding: 5px;
+    padding: 2px;
     border-radius: 5px;
-    display:flex colum;
-    text-align:center;
-    justify-content:center;
-    align-items:center;
+    display:flex ;
+    text-align: center;
+    flex-direction: column;
+    columns: 1;
 }
 
-label{
+.packing-form label{
   width:100%;
-  margin: 3px auto;
+  margin: 10px auto 5px auto;
   text-align:center;
 }
 
-input{
-    margin: 15px auto;
+.packing-form input{
+    margin: 5px auto;
 }
 
-input:focus{
+.packing-form input:focus{
     outline-color: blue;
 }
 .table{
@@ -63,15 +58,10 @@ table{
 
 }
 
-.titulo{
-    background: #01d4c7;
-    color: #fff;
-    font-family: Verdana, Geneva, Tahoma, sans-serif;
-    font-weight: bolder;
-    font-size: 25px;
-    padding: 7px 0 7px 0;
-}
 .titulo2{
+    width: 100%;
+    margin-top: 0;
+
     background: #01d4c7;
     color: #fff;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
@@ -81,8 +71,11 @@ table{
     border-radius: 5px;
 }
 #continuar{
+    width: 70%;
     display: flex;
-    margin:3px auto;
+    margin:10px auto 3px auto;    
+    justify-content: center;
+    font-weight: bolder;
     font-size: 15px;
     padding: 5px 10px;
     text-decoration: none ;

@@ -39,7 +39,7 @@ section h1{
     margin-top: -80px;
     background: #fff;
     width: 350px;
-    height: 225px;
+    height: 250px;
     display:flexbox;
     box-shadow: 0 0 10px  #888;
     border-top-right-radius: 5px;
@@ -80,32 +80,31 @@ form{
     padding: 0 10px ;
     box-shadow: 0 0 2px #000;
     border-radius: 5px;
-    color: #01d4c7;
+    color: #888;
     font-size: 25px;
     margin-bottom: 10px;
 
 }
 
 .container-validacion form div p{
-    color: #01d4c7;
-    font-weight: bolder;
+    color: #888;
+    font-weight: 600;
 
 }
 .container-validacion form div a {
 
-    color: #01d4c7;
+    color: #888;
     text-decoration: none;
     font-weight: bolder;
-    font-size: 20px;
+    font-size: 15px;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
     padding: 5px;
-    box-shadow: 0 0 3px #01d4c7;
     border-radius: 50% ;
 
 }
 
 .container-validacion form div a:hover {
-    background: #01d4c7;
+    background: #01d4c675;
     color: #fff;
     box-shadow: 0 0 3px #fff;
 
@@ -125,30 +124,30 @@ form label{
 }
 
 input{
-    margin-bottom: 2.5vh;
-    margin-top: 1vh;
+    margin-bottom: 30px;
+    margin-top: 10px;
     font-size: 2vh;
 }
 
 input.user_inicio{
-    margin-bottom: 2.5vh;
-    margin-top: 1vh;
-    font-size: 2vh;
-    padding: 2vh;
+    margin-bottom: 25px;
+    margin-top: 10px;
+    font-size: 15px;
+    padding: 10px;
     border-radius: 5px;
     border:none;
     outline: none;
     box-shadow: 0 0 0.2vh #000;
 }
 input.user_inicio:focus{
-    box-shadow: 0 0 0.5vh #3483fa, 0 0 0.5vh #3483fa, 0 0 0.5vh #3483fa, 0 0 0.5vh #3483fa, 0 0 0.5vh #3483fa, 0 0 0.5vh #3483fa, 0 0 0.5vh #3483fa, 0 0 0.5vh #3483fa, 0 0 0.5vh #3483fa, 0 0 0.5vh #3483fa;
+    box-shadow: 0 0 5px #3483fa, 0 0 5px #3483fa, 0 0 5px #3483fa, 0 0 5px #3483fa, 0 0 5px #3483fa, 0 0 5px #3483fa, 0 0 5px #3483fa, 0 0 5px #3483fa, 0 0 5px #3483fa, 0 0 5px #3483fa;
 }
 .btn{
     font-family: Verdana, Tahoma, sans-serif;
     width: 100%;
-    font-size: 2vh;
+    font-size: 20px;
     padding:2vh 1vh;
-    background: #3483fa;
+    background: #01d4c7;
     color: #fff;
     font-weight: bolder;
     border:none;
@@ -160,10 +159,8 @@ input.user_inicio:focus{
 
 .btn:hover{
     font-family: Verdana, Tahoma, sans-serif;
-    width: 100%;
-    font-size: 2vh;
     font-weight: bolder;
-    background: #256ad3;
+    background: #03ab9f;
     color: #fff;
     transition: 0.5s;
 }

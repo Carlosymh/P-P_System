@@ -24,6 +24,10 @@ if  response.status_code == 200:
         Stop=row['Stop']
         currentQuantity=row['currentQuantity']
         pendingQuantity=originalQuantity-currentQuantity
+        if originalQuantity <= currentQuantity :
+            Status= 'Finished'
+        else:
+            Status= 'Pendding'
         i=i+1
         print(i)
 

@@ -8,8 +8,8 @@ body{
 .fondo{
     margin: 0 ;
     width: 100%;
-    height: 30vh;
-    background: #07cac0d7;
+    height: 35vh;
+    background: rgb(231, 248, 247);
 }
 .user{
     padding: 20px 0 0 0;
@@ -17,22 +17,24 @@ body{
     justify-content: center;
     text-align: center;
     align-items: center;
-    color: #fff;
+    color: #00b1a8;
 }
 .user i{
-    background: #04d1c7;
+    background: #01d4c7;
     padding: 20px;
     color: #fff;
     margin: auto;
     font-size: 40px;
     border-radius: 50%;
-    border: 3px solid #fff;
+    border: 3px solid #01d4c7;
 }
 .user h1{
     color: #fff;
     margin: auto;
     font-size: 30px;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
+    text-shadow: -1px 0 0 #00b1a8, 1px 1px 0 #000, 0 1px 0 #000, 1px 0 0 #000, 0 -1px 0 #00b1a8,-1px -1px 0 #00b1a8, 0 -1px 0 #000;  
+
 
 }
 .user h3{
@@ -40,7 +42,10 @@ body{
     margin: auto;
     font-size: 20px;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
-} .container_form{
+    text-shadow: -1px 0 0 #00b1a8, 1px 1px 0 #000, 0 1px 0 #000, 1px 0 0 #000, 0 -1px 0 #00b1a8,-1px -1px 0 #00b1a8, 0 -1px 0 #000;  
+
+} 
+.container_form{
     width: 50%;
     margin:30px auto auto auto;
     display: flex;

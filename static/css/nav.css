@@ -17,18 +17,18 @@
 }
 .text_logo{
     width: 20px;
-    height: 30px;
+    height: 25px;
     margin:  auto auto auto 3px;
     font-family: 'Harabara',Verdana, Arial;
-    font-size: 15px;
+    font-size: 12px;
     color: var(--color-blue-dark);
     font-weight:600;
 
 }
 .logo{
     margin: auto 3px;
-    width: 60px;
-    height: 35px;
+    width: 50px;
+    height: 25px;
     padding-left: 1rem;
 }
 .nav-main a{
@@ -39,15 +39,15 @@
 }
 .nav-main__menu a{
     color: inherit;
-    margin-top: 10px;
-    margin-bottom: 10px;
+    margin-top: 5px;
+    margin-bottom: 5px;
     text-align: center;
 
 }
 .user .fas{
-    padding-left: 3px;
-    padding-right: 3px;
-    font-size: 10px;
+    padding-left: 2.5px;
+    padding-right: 2.5px;
+    font-size: 5px;
 }
 .enlace{
     text-decoration: none;
@@ -78,7 +78,7 @@
 .icon-nav{
     display: block;
     width: 60%;
-    height: 3px;
+    height: 2.5px;
     background-color: #fff;
     transition: transform calc(var(--time-animation) / 2);
 }
@@ -216,6 +216,7 @@
     font-size: 20px;
     border-radius: 50%;
     border:1px solid #fff;
+    text-align: center;
     color: #fff;
     transition: 1s;
     z-index: 10;
@@ -227,6 +228,7 @@
     font-family: Verdana, Geneva, Tahoma, sans-serif;
     color: #fff;
     font-size: 2vh;
+    text-align: center;
     z-index: 10;
 }
 .nav-main .user_info .fas:hover{
