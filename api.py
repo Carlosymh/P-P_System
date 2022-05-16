@@ -1,4 +1,4 @@
-from flask import requests
+import requests
 import json
 
 url="https://metabase.munitienda.com/public/question/e8e1234f-6818-430f-a6c8-86585cd4ef09.json"

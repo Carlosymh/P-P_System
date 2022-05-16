@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image" href="/static/img/Muni.icon.png">   
-    <link rel="stylesheet" href="{{url_for('static', filename='css/formularios.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/file.css')}}">
     <link href="//db.onlinewebfonts.com/c/69f1400361a215519d385199118a34aa?family=Harabara" rel="stylesheet" type="text/css"/>
     <link rel="stylesheet" href="{{url_for('static', filename='css/nav.css')}}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,20 +31,17 @@
         <div class="fondo"></div>
         <section>
             <!-- enctype="multipart/form-data" -->
-            <form action="/CargarDatos " method="POST" enctype="multipart/form-data" >
+            <form class="form_file" action="/CargarDatos " method="POST" enctype="multipart/form-data" >
                 <h2> Carga de Solicitudes </h2>
                 <span>solo Ingresa archivos CSV</span>
-                
-                    <label for="datos">Archivo:</label>
+                <label for="base">Nombre de Base de datos :</label>
+                <select name="base" required>
+                    <option value="Product">Product</option>
+                    <option value="P&P">P&P</option>
+                </select>
+                    <label for="datos">Base de datos :</label>
                     <input type="file" name="datos" >
-                    <label for="base">Base de Datos </label>
-                    <select name="base" id="basebd">
-                        <option value="Donacion">Donacion</option>
-                        <option value="Retiros">Retiros</option>
-                        <option value="Ingram">rezagos</option>
-                        <option value="Inventario Seller">Inventario Seller</option>
-                    </select>
-                <input type="submit" class="btn" name="enviar" value="enviar" >
+                <input type="submit" id="continuar" name="enviar" value="enviar" >
             </form>
         </section>
 {% endblock %}

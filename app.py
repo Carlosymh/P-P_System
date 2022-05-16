@@ -1,8 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response, Response, jsonify,requests #pip install flask
+from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response, Response, jsonify #pip install flask
+import requests
 import io
 import csv
 import json
-
 from sre_constants import SUCCESS
 import cv2 #pip install opencv-python-headless or pip install opencv-python
 import numpy as np  
@@ -160,7 +160,7 @@ def registro():
 
 @app.route('/RegistrarPacking',methods=['POST','GET'])
 def registroP():
-  # try:
+  try:
       if request.method == 'POST':
         deliveryday =  request.form['deliveryday']
         route =  request.form['route']
@@ -179,15 +179,14 @@ def registroP():
         else:
           flash("No hay Ordenes Pendientes es esta ruta")
           return redirect('/Packing')
-  # except Exception as error: 
-  #   flash(str(error))
-  #   return redirect('/Packing')
+  except Exception as error: 
+    flash(str(error))
+    return redirect('/Packing')
 
 @app.route('/RegistroMovPacking/<route>/<deliveryday>',methods=['POST','GET'])
 def registroMovPacking(route,deliveryday):
   try:
       if request.method == 'POST':
-        print(route,deliveryday)
         ean =  request.form['ean']
         status="Finished"
         Site=session['SiteName']
@@ -259,30 +258,77 @@ def registroMovPacking(route,deliveryday):
 def registrarReceiving():
   try:
       if request.method == 'POST':
-        deliveryday =  request.form['deliveryday']
-        route =  request.form['route']
-        Site =  session['SiteName']
-        status="Finished"
-        link = connectBD()
-        db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-        cur= db_connection.cursor()
-        # Read a single record
-        sql = "SELECT * FROM orders WHERE RouteName=%s AND DeliveryDate=%s AND NOT Status=%s AND Site=%s "
-        cur.execute(sql, (route,deliveryday,status,Site))
-        data = cur.fetchall()
-        cur.close()
-        if data :
-          return render_template('actualizacion/Scan.html',Datos =session, data=data)
+        ReceivingType =  request.form['ReceivingType']
+        if request.form['OrderNumber']:
+          OrderNumber =  request.form['OrderNumber']
         else:
-          flash("No hay Ordenes Pendientes es esta ruta")
-          return redirect('/Packing')
+          OrderNumber =  "No Aplica"
+
+        return render_template('actualizacion/receivingscan.html',Datos =session, ReceivingType=ReceivingType,OrderNumber=OrderNumber)
   except Exception as error: 
     flash(str(error))
     return redirect('/Packing')
 
+@app.route('/RegistroMovReceiving/<receivingType>/<orderNumber>',methods=['POST','GET'])
+def registroMovReceiving(receivingType,orderNumber):
+  # try:
+      if request.method == 'POST':
+        ean =  request.form['ean']
+        link = connectBD()
+        db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
+        cur= db_connection.cursor()
+        # Read a single record
+        sql = "SELECT * FROM product WHERE CB_Captura =%s limit 1  "
+        cur.execute(sql, (ean,))
+        data = cur.fetchone()
+        cur.close()
+        if data:
+          link = connectBD()
+          db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
+          cur= db_connection.cursor()
+          # Create a new record
+          sql = "INSERT INTO receiving (PurchaseOrder,Type,Ean,EanMuni,ConversionUnit	,Quantity,Description,Responsible,Status,Site,DateTime) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+          cur.execute(sql,(orderNumber,receivingType,ean,data[2],data[4],1,data[3],session['UserName'],'In Process',session['SiteName'],datetime.now(),))
+          # connection is not autocommit by default. So you must commit to save
+          # your changes.
+          db_connection.commit()
+          cur.close()
+          link = connectBD()
+          db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
+          cur= db_connection.cursor()
+          # Read a single record
+          sql = "SELECT PurchaseOrder,	Type,	Ean,EanMuni, sum(ConversionUnit),Description FROM receiving WHERE  PurchaseOrder=%s AND Type=%s AND  Responsible =%s AND Status=%s  "
+          cur.execute(sql, (orderNumber,receivingType,session['UserName'],'In Process',))
+          data2 = cur.fetchall()
+          cur.close()
+          return render_template('actualizacion/receivingscan.html',Datos =session, data=data2)
+        else:
+          link = connectBD()
+          db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
+          cur= db_connection.cursor()
+          # Create a new record
+          sql = "INSERT INTO receiving (PurchaseOrder,Type,Ean,Quantity,Responsible,Status,Site,DateTime) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
+          cur.execute(sql,(orderNumber,receivingType,ean,1,session['UserName'],'In Process',session['SiteName'],datetime.now(),))
+          # connection is not autocommit by default. So you must commit to save
+          # your changes.
+          db_connection.commit()
+          cur.close()
+          link = connectBD()
+          db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
+          cur= db_connection.cursor()
+          # Read a single record
+          sql = "SELECT * FROM receiving WHERE  PurchaseOrder=%s AND Type=%s AND  Responsible =%s AND Status=%s  "
+          cur.execute(sql, (orderNumber,receivingType,session['UserName'],'In Process'))
+          data2 = cur.fetchall()
+          cur.close()
+          return render_template('actualizacion/receivingscan.html',Datos =session, data=data2)
+  # except Exception as error: 
+  #   flash(str(error))
+  #   return redirect('/Packing')
+
 @app.route('/Api',methods=['POST','GET'])
 def api():
-  try:
+  # try:
         url="https://metabase.munitienda.com/public/question/e8e1234f-6818-430f-a6c8-86585cd4ef09.json"
         response = requests.get(url)
         if  response.status_code == 200:
@@ -344,9 +390,9 @@ def api():
                 
           return redirect('/home')
 
-  except Exception as error: 
-    flash(str(error))
-    return redirect('/home')
+  # except Exception as error: 
+  #   flash(str(error))
+  #   return redirect('/home')
 
 #Registro de Usuarios
 @app.route('/registrar',methods=['POST'])
@@ -1200,364 +1246,6 @@ def Reporte_donacion(rowi):
             data = cur.fetchall()
             cur.close()
             return render_template('reportes/t_donacion.html',Datos = session,Infos =data)         
-  except Exception as error: 
-    flash(str(error))
-    return render_template('index.html')
-
-@app.route('/Reporte_Ingram/<rowi>',methods=['POST','GET'])
-def Reporte_ingram(rowi):
-  try:
-      if request.method == 'POST':
-        if request.method == 'GET':
-          session['rowi_ingram']=rowi
-          row1 = int(session['rowi_ingram'])
-          row2 = 50
-        else:
-            row1 = int(session['rowi_ingram'])
-            row2 =50
-        if 'valor' in request.form:
-          if len(request.form['valor'])>0:
-            session['filtro_ingram']=request.form['filtro']
-            session['valor_ingram']=request.form['valor']
-            if 'datefilter' in request.form:
-              if len(request.form['datefilter'])>0:
-                daterangef=request.form['datefilter']
-                daterange=daterangef.replace("-", "' AND '")
-                session['datefilter_ingram']=daterange
-                link = connectBD()
-                db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-                cur= db_connection.cursor()
-                # Read a single record
-                sql = "SELECT * FROM retirio_ingram WHERE {} LIKE \'%{}%\' AND fecha BETWEEN \'{}\' AND Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['filtro_ingram'],session['valor_ingram'],session['datefilter_ingram'],session['SiteName'],row1,row2)
-                cur.execute(sql)
-                data = cur.fetchall()
-                cur.close()
-                return render_template('reportes/t_ingram.html',Datos = session,Infos =data)
-              else:
-                link = connectBD()
-                db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-                cur= db_connection.cursor()
-                # Read a single record
-                sql = "SELECT * FROM retirio_ingram WHERE {} LIKE \'%{}%\' AND Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['filtro_ingram'],session['valor_ingram'],session['SiteName'],row1,row2)
-                cur.execute(sql)
-                data = cur.fetchall()
-                cur.close()
-                return render_template('reportes/t_ingram.html',Datos = session,Infos =data)
-            else:
-              session.pop('datefilter_ingram')
-              link = connectBD()
-              db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-              cur= db_connection.cursor()
-              # Read a single record
-              sql = "SELECT * FROM retirio_ingram WHERE {} LIKE \'%{}%\' AND Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['filtro_ingram'],session['valor_ingram'],session['SiteName'],row1,row2)
-              cur.execute(sql)
-              data = cur.fetchall()
-              cur.close()
-              return render_template('reportes/t_ingram.html',Datos = session,Infos =data)
-          else:
-            if 'datefilter' in request.form:
-              if len(request.form['datefilter'])>0:
-                if 'valor_ingram' in session:
-                  if len(session['valor_ingram'])>0:
-                    daterangef=request.form['datefilter']
-                    daterange=daterangef.replace("-", "' AND '")
-                    session['datefilter_ingram']=daterange
-                    link = connectBD()
-                    db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-                    cur= db_connection.cursor()
-                    # Read a single record
-                    sql = "SELECT * FROM retirio_ingram WHERE {} LIKE \'%{}%\' AND fecha BETWEEN \'{}\' AND Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['filtro_ingram'],session['valor_ingram'],session['datefilter_ingram'],session['SiteName'],row1,row2)
-                    cur.execute(sql)
-                    data = cur.fetchall()
-                    cur.close()
-                    return render_template('reportes/t_ingram.html',Datos = session,Infos =data)
-                  else:
-                    session.pop('filtro_ingram')
-                    session.pop('valor_ingram')
-                    link = connectBD()
-                    db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-                    cur= db_connection.cursor()
-                    # Read a single record
-                    sql = "SELECT * FROM retirio_ingram WHERE fecha BETWEEN \'{}\' AND Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['datefilter_ingram'],session['SiteName'],row1,row2)
-                    cur.execute(sql)
-                    data = cur.fetchall()
-                    cur.close()
-                    return render_template('reportes/t_ingram.html',Datos = session,Infos =data)
-                else:
-                  link = connectBD()
-                  db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-                  cur= db_connection.cursor()
-                  # Read a single record
-                  sql = "SELECT * FROM retirio_ingram WHERE fecha BETWEEN \'{}\' AND Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['datefilter_ingram'],session['SiteName'],row1,row2)
-                  cur.execute(sql)
-                  data = cur.fetchall()
-                  cur.close()
-                  return render_template('reportes/t_ingram.html',Datos = session,Infos =data)
-              else:
-                if 'valor_ingram' in session:
-                  session.pop('filtro_ingram')
-                  session.pop('valor_ingram')
-                if 'datefilter_ingram' in session:
-                  session.pop('datefilter_ingram')
-                link = connectBD()
-                db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-                cur= db_connection.cursor()
-                # Read a single record
-                sql = "SELECT * FROM retirio_ingram WHERE Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['SiteName'],row1,row2)
-                cur.execute(sql)
-                data = cur.fetchall()
-                cur.close()
-            else:
-              if 'valor_ingram' in session:
-                session.pop('filtro_ingram')
-                session.pop('valor_ingram')
-              if 'datefilter_ingram' in session:
-                session.pop('datefilter_ingram')
-              link = connectBD()
-              db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-              cur= db_connection.cursor()
-              # Read a single record
-              sql = "SELECT * FROM retirio_ingram WHERE Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['SiteName'],row1,row2)
-              cur.execute(sql)
-              data = cur.fetchall()
-              cur.close()
-        else:
-          if 'valor_ingram' in session:
-            if len(session['valor_ingram'])>0:
-              if 'datefilter_ingram' in session:
-                if len(session['datefilter_ingram'])>0:
-                  link = connectBD()
-                  db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-                  cur= db_connection.cursor()
-                  # Read a single record
-                  sql = "SELECT * FROM retirio_ingram WHERE {} LIKE \'%{}%\' AND fecha BETWEEN \'{}\' AND Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['filtro_ingram'],session['valor_ingram'],session['datefilter_ingram'],session['SiteName'],row1,row2)
-                  cur.execute(sql)
-                  data = cur.fetchall()
-                  cur.close()
-                  return render_template('reportes/t_ingram.html',Datos = session,Infos =data)
-                else:
-                  session.pop('datefilter_ingram')
-                  link = connectBD()
-                  db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-                  cur= db_connection.cursor()
-                  # Read a single record
-                  sql = "SELECT * FROM retirio_ingram WHERE {} LIKE \'%{}%\' AND Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['filtro_ingram'],session['valor_ingram'],session['SiteName'],row1,row2)
-                  cur.execute(sql)
-                  data = cur.fetchall()
-                  cur.close()
-                  return render_template('reportes/t_ingram.html',Datos = session,Infos =data)
-              else:
-                link = connectBD()
-                db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-                cur= db_connection.cursor()
-                # Read a single record
-                sql = "SELECT * FROM retirio_ingram WHERE {} LIKE \'%{}%\' AND Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['filtro_ingram'],session['valor_ingram'],session['SiteName'],row1,row2)
-                cur.execute(sql)
-                data = cur.fetchall()
-                cur.close()
-                return render_template('reportes/t_ingram.html',Datos = session,Infos =data) 
-            else:
-              session.pop('filtro_ingram')
-              session.pop('valor_ingram')
-              if 'datefilter_ingram' in session:
-                if len(session['datefilter_ingram'])>0:
-                  link = connectBD()
-                  db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-                  cur= db_connection.cursor()
-                  # Read a single record
-                  sql = "SELECT * FROM retirio_ingram WHERE fecha BETWEEN \'{}\' AND Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['datefilter_ingram'],session['SiteName'],row1,row2)
-                  cur.execute(sql)
-                  data = cur.fetchall()
-                  cur.close()
-                  return render_template('reportes/t_ingram.html',Datos = session,Infos =data)
-                else:
-                  link = connectBD()
-                  db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-                  cur= db_connection.cursor()
-                  # Read a single record
-                  sql = "SELECT * FROM retirio_ingram WHERE Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['SiteName'],row1,row2)
-                  cur.execute(sql)
-                  data = cur.fetchall()
-                  cur.close()
-                  return render_template('reportes/t_ingram.html',Datos = session,Infos =data)
-              else:
-                link = connectBD()
-                db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-                cur= db_connection.cursor()
-                # Read a single record
-                sql = "SELECT * FROM retirio_ingram WHERE Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['SiteName'],row1,row2)
-                cur.execute(sql)
-                data = cur.fetchall()
-                cur.close()
-                return render_template('reportes/t_ingram.html',Datos = session,Infos =data)
-          else:
-            if 'datefilter_ingram' in session:
-              if len(session['datefilter_ingram'])>0:
-                link = connectBD()
-                db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-                cur= db_connection.cursor()
-                # Read a single record
-                sql = "SELECT * FROM retirio_ingram WHERE fecha BETWEEN \'{}\' AND Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['datefilter_ingram'],session['SiteName'],row1,row2)
-                cur.execute(sql)
-                data = cur.fetchall()
-                cur.close()
-                return render_template('reportes/t_ingram.html',Datos = session,Infos =data)
-              else:
-                session.pop('datefilter_ingram')
-                link = connectBD()
-                db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-                cur= db_connection.cursor()
-                # Read a single record
-                sql = "SELECT * FROM retirio_ingram WHERE Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['SiteName'],row1,row2)
-                cur.execute(sql)
-                data = cur.fetchall()
-                cur.close()
-                return render_template('reportes/t_ingram.html',Datos = session,Infos =data)
-            else:
-              if 'datefilter' in request.form:
-                if len(request.form['datefilter'])>0:
-                  daterangef=request.form['datefilter']
-                  daterange=daterangef.replace("-", "' AND '")
-                  session['datefilter_ingram']=daterange
-                  link = connectBD()
-                  db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-                  cur= db_connection.cursor()
-                  # Read a single record
-                  sql = "SELECT * FROM retirio_ingram WHERE  fecha BETWEEN \'{}\' AND Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['datefilter_ingram'],session['SiteName'],row1,row2)
-                  cur.execute(sql)
-                  data = cur.fetchall()
-                  cur.close()
-                  return render_template('reportes/t_ingram.html',Datos = session,Infos =data)
-                else:
-                  link = connectBD()
-                  db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-                  cur= db_connection.cursor()
-                  # Read a single record
-                  sql = "SELECT * FROM retirio_ingram WHERE Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['SiteName'],row1,row2)
-                  cur.execute(sql)
-                  data = cur.fetchall()
-                  cur.close()
-                  return render_template('reportes/t_ingram.html',Datos = session,Infos =data) 
-              else:
-                link = connectBD()
-                db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-                cur= db_connection.cursor()
-                # Read a single record
-                sql = "SELECT * FROM retirio_ingram WHERE Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['SiteName'],row1,row2)
-                cur.execute(sql)
-                data = cur.fetchall()
-                cur.close()
-                return render_template('reportes/t_ingram.html',Datos = session,Infos =data) 
-      else: 
-        if request.method == 'GET':
-          session['rowi_ingram']=rowi
-          row1 = int(session['rowi_ingram'])
-          row2 = 50
-        else:
-          row1 = int(session['rowi_ingram'])
-          row2 =50
-        if 'valor_ingram' in session:
-          if len(session['valor_ingram'])>0:
-            if 'datefilter_ingram' in session:
-              if len(session['datefilter_ingram'])>0:
-                link = connectBD()
-                db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-                cur= db_connection.cursor()
-                # Read a single record
-                sql = "SELECT * FROM retirio_ingram WHERE {} LIKE \'%{}%\' AND fecha BETWEEN \'{}\' AND Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['filtro_ingram'],session['valor_ingram'],session['datefilter_ingram'],session['SiteName'],row1,row2)
-                cur.execute(sql)
-                data = cur.fetchall()
-                cur.close()
-                return render_template('reportes/t_ingram.html',Datos = session,Infos =data)
-              else:
-                session.pop('datefilter_ingram')
-                link = connectBD()
-                db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-                cur= db_connection.cursor()
-                # Read a single record
-                sql = "SELECT * FROM retirio_ingram WHERE {} LIKE \'%{}%\' AND Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['filtro_ingram'],session['valor_ingram'],session['SiteName'],row1,row2)
-                cur.execute(sql)
-                data = cur.fetchall()
-                cur.close()
-                return render_template('reportes/t_ingram.html',Datos = session,Infos =data)
-            else:
-              link = connectBD()
-              db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-              cur= db_connection.cursor()
-              # Read a single record
-              sql = "SELECT * FROM retirio_ingram WHERE {} LIKE \'%{}%\' AND Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['filtro_ingram'],session['valor_ingram'],session['SiteName'],row1,row2)
-              cur.execute(sql)
-              data = cur.fetchall()
-              cur.close()
-              return render_template('reportes/t_ingram.html',Datos = session,Infos =data) 
-          else:
-            session.pop('filtro_ingram')
-            session.pop('valor_ingram')
-            if 'datefilter_ingram' in session:
-              if len(session['datefilter_ingram'])>0:
-                link = connectBD()
-                db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-                cur= db_connection.cursor()
-                # Read a single record
-                sql = "SELECT * FROM retirio_ingram WHERE fecha BETWEEN \'{}\' AND Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['datefilter_ingram'],session['SiteName'],row1,row2)
-                cur.execute(sql)
-                data = cur.fetchall()
-                cur.close()
-                return render_template('reportes/t_ingram.html',Datos = session,Infos =data)
-              else:
-                session.pop('datefilter_ingram')
-                link = connectBD()
-                db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-                cur= db_connection.cursor()
-                # Read a single record
-                sql = "SELECT * FROM retirio_ingram WHERE Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['SiteName'],row1,row2)
-                cur.execute(sql)
-                data = cur.fetchall()
-                cur.close()
-                return render_template('reportes/t_ingram.html',Datos = session,Infos =data)
-            else:
-              link = connectBD()
-              db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-              cur= db_connection.cursor()
-              # Read a single record
-              sql = "SELECT * FROM retirio_ingram WHERE Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['SiteName'],row1,row2)
-              cur.execute(sql)
-              data = cur.fetchall()
-              cur.close()
-              return render_template('reportes/t_ingram.html',Datos = session,Infos =data)
-        else:
-          if 'datefilter_ingram' in session:
-            if len(session['datefilter_ingram'])>0:
-              link = connectBD()
-              db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-              cur= db_connection.cursor()
-              # Read a single record
-              sql = "SELECT * FROM retirio_ingram WHERE fecha BETWEEN \'{}\' AND Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['datefilter_ingram'],session['SiteName'],row1,row2)
-              cur.execute(sql)
-              data = cur.fetchall()
-              cur.close()
-              return render_template('reportes/t_ingram.html',Datos = session,Infos =data)
-            else:
-              session.pop('datefilter_ingram')
-              link = connectBD()
-              db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-              cur= db_connection.cursor()
-              # Read a single record
-              sql = "SELECT * FROM retirio_ingram WHERE Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['SiteName'],row1,row2)
-              cur.execute(sql)
-              data = cur.fetchall()
-              cur.close()
-              return render_template('reportes/t_ingram.html',Datos = session,Infos =data)
-          else:
-            link = connectBD()
-            db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
-            cur= db_connection.cursor()
-            # Read a single record
-            sql = "SELECT * FROM retirio_ingram WHERE Site =\'{}\' ORDER BY fecha DESC  LIMIT {}, {}".format(session['SiteName'],row1,row2)
-            cur.execute(sql)
-            data = cur.fetchall()
-            cur.close()
-            return render_template('reportes/t_ingram.html',Datos = session,Infos =data)         
   except Exception as error: 
     flash(str(error))
     return render_template('index.html')
@@ -3098,15 +2786,14 @@ def Files_():
 
 @app.route('/CargarDatos',methods=['POST','GET'])
 def uploadFiles():
-  try:
+  # try:
     if 'FullName' in session:
       # get the uploaded file
       file =request.files['datos']
-      base = request.form['base']
-      
-      if base == 'Donacion':
-        file.save(os.path.join(UPLOAD_FOLDER, "donacioncsv.csv"))
-        with open(UPLOAD_FOLDER+'donacioncsv.csv',"r", encoding="utf8", errors='ignore') as csv_file:
+      Base =request.form['base']
+      if Base=='Product':
+        file.save(os.path.join(UPLOAD_FOLDER, "datos.csv"))
+        with open(UPLOAD_FOLDER+'datos.csv',"r", encoding="utf8", errors='ignore') as csv_file:
           data=csv.reader(csv_file, delimiter=',')
           i=0
           for row in data:
@@ -3116,9 +2803,8 @@ def uploadFiles():
               db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8mb4", init_command="set names utf8mb4")
               cur= db_connection.cursor()
               # Create a new record
-              descr=str(row[5])
-              sql = "INSERT INTO solicitud_donacion (numero_ola,  SKU, Cantidad_Solicitada, costo_unitario, suma_de_gmv_total, descripcion, cantidad_susrtida,  fecha_de_solicitud, facility, Site) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-              cur.execute(sql,(row[0], row[1], row[2], row[3], row[4],descr,0,now,session['FcName'],session['SiteName'],))
+              sql = "INSERT INTO product (CB_Captura,  EAN_MUNI, Producto, Factor_de_Conversión) VALUES (%s,%s,%s,%s)"
+              cur.execute(sql,(row[0], row[1], row[2], row[3],))
               # connection is not autocommit by default. So you must commit to save
               # your changes.
               db_connection.commit()
@@ -3126,83 +2812,74 @@ def uploadFiles():
             i+=1 
         flash(str(i)+' Registros Exitoso')
         return redirect('/files')
-      elif base == 'Retiros':
-        file.save(os.path.join(UPLOAD_FOLDER, "retiroscsv.csv"))
-        with open(UPLOAD_FOLDER+'retiroscsv.csv',"r", encoding="latin-1", errors='replace') as csv_file:
+        
+      elif Base=='P&P':
+        file.save(os.path.join(UPLOAD_FOLDER, "datos.csv"))
+        with open(UPLOAD_FOLDER+'datos.csv',"r", encoding="utf8", errors='ignore') as csv_file:
           data=csv.reader(csv_file, delimiter=',')
           i=0
           for row in data:
-            if i>0:
-              if row[0]:
-                now= datetime.now()
+            if i >0:
+              routeName= row[1]
+              FUName=row[4]
+              Service_Zone=row[13]
+              fk_order= row[15]
+              packer=row[5]
+              FuOrder=row[14]
+              ean=row[7]
+              operationGroup=row[12]
+              productName=row[8]
+              type=row[5]
+              deliveryDate=row[0]
+              originalQuantity=int(row[11])
+              Vendor=row[9]
+              CLid=row[3]
+              Stop=row[2]
+              currentQuantity=int(row[10])
+              pendingQuantity=int(originalQuantity)-int(currentQuantity)
+              if originalQuantity==currentQuantity:
+                status= 'Finished'
+              elif currentQuantity>0 and pendingQuantity> 0:
+                status= 'In Process'
+              else:
+                status= 'Pendding'
+              link = connectBD()
+              db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
+              cur= db_connection.cursor()
+              # Read a single record
+              sql = "SELECT * FROM orders WHERE RouteName=%s AND  Fk_order=%s AND FuOrder=%s AND Ean=%s  Limit 1 "
+              cur.execute(sql, (routeName,fk_order,FuOrder,ean))
+              data = cur.fetchone()
+              cur.close()
+              if data is None:
                 link = connectBD()
-                db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8mb4", init_command="set names utf8mb4")
+                db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
                 cur= db_connection.cursor()
                 # Create a new record
-                descr=str(row[5])
-                sql = "INSERT INTO solicitud_retiros (nuemro_de_ola,  meli, fecha_de_entrega, cantidad_solizitada, QTY_DISP_WMS, Descripción, Fecha_de_creacion,  facility, Site) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-                cur.execute(sql,(row[0], row[1], row[2], row[3], row[4], descr,now,session['FcName'],session['SiteName'],))
+                sql = "INSERT INTO orders (RouteName,FUName,Service_Zone,Fk_order,Packer,FuOrder,Ean,OperationGroup,ProductName,Type,DeliveryDay,OriginalQuantity,Vendedor,CLid,Stop,CurrentQuantity,PendingQuantity,Status,Site) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                cur.execute(sql,(routeName,FUName,Service_Zone,fk_order,packer,FuOrder,ean,operationGroup,productName,type,deliveryDate,originalQuantity,Vendor,CLid,Stop,currentQuantity,pendingQuantity,status,session['SiteName'],))
                 # connection is not autocommit by default. So you must commit to save
                 # your changes.
                 db_connection.commit()
                 cur.close()
-              
-            i+=1
-        
+              else:
+                link = connectBD()
+                db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8", init_command="set names utf8")
+                cur= db_connection.cursor()
+                # Create a new record
+                sql = "UPDATE orders SET CurrentQuantity = %s, PendingQuantity = %s, Status = %s, Packer = %s WHERE RouteName=%s AND  Fk_order=%s AND FuOrder=%s AND Ean=%s"
+                cur.execute(sql,(currentQuantity,pendingQuantity,status,packer,routeName,fk_order,FuOrder,ean,))
+                # connection is not autocommit by default. So you must commit to save
+                # your changes.
+                db_connection.commit()
+                cur.close()
+            i+=1 
         flash(str(i)+' Registros Exitoso')
         return redirect('/files')
-      elif base == 'Ingram':
-        file.save(os.path.join(UPLOAD_FOLDER, "ingramcsv.csv"))
-        with open(UPLOAD_FOLDER+'ingramcsv.csv',"r", encoding="utf8", errors='ignore') as csv_file:
-          data=csv.reader(csv_file, delimiter=',')
-          i=0
-          for row in data:
-            if i>0:
-              now= datetime.now()
-              link = connectBD()
-              db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8mb4", init_command="set names utf8mb4")
-              cur= db_connection.cursor()
-              # Create a new record
-              descr=str(row[4])
-              sql = "INSERT INTO ingram (numero_ola,  SKU, Cantidad_Solicitada, cantidad_disponible, descripcion, fecha_de_solicitud, facility, Site) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
-              cur.execute(sql,(row[0], row[1], row[2], row[3], descr,now,session['FcName'],session['SiteName']))
-              # connection is not autocommit by default. So you must commit to save
-              # your changes.
-              db_connection.commit()
-              cur.close()
-            i+=1
-            
-        flash(str(i)+' Registros Exitoso')
-        return redirect('/files')
-      elif base == 'Inventario Seller':
-        file.save(os.path.join(UPLOAD_FOLDER, "inventariosellercsv.csv"))
-        with open(UPLOAD_FOLDER+'inventariosellercsv.csv',"r", encoding="utf8", errors='ignore') as csv_file:
-          data=csv.reader(csv_file, delimiter=',')
-          i=0
-          for row in data:
-            if i>0:
-              now= datetime.now()
-              link = connectBD()
-              db_connection = pymysql.connect(host=link[0], user=link[1], passwd="", db=link[2], charset="utf8mb4", init_command="set names utf8mb4")
-              cur= db_connection.cursor()
-              # Create a new record
-              seller=str(row[3])
-              holding=str(row[4])
-              sql = "INSERT INTO inventario_seller (INVENTORY_ID,  ADDRESS_ID_TO, Seller, Holding, Cantidad, fecha_de_actualizacion, facility, Site) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
-              cur.execute(sql,(row[1], row[2],seller,holding, row[5],now,session['FcName'],session['SiteName'],))
-              # connection is not autocommit by default. So you must commit to save
-              # your changes.
-              db_connection.commit()
-              cur.close()
-            i+=1
-        
-        flash(str(i)+' Registros Exitoso')
-        return redirect('/files')
-    else:
-      return redirect('/')
-  except Exception as error:
-    flash(str(error))
-    return redirect('/files')
+
+  # except Exception as error:
+  #   flash(str(error))
+  #   return redirect('/files')
 
 @app.route('/scanercam',methods=['POST','GET'])
 def scancam():

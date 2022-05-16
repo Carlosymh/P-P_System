@@ -43,7 +43,6 @@ body::-webkit-scrollbar {
 }
 table{
     width: 97%;
-    min-height: 80vh;
     margin: 10px auto auto  auto;
     justify-content: space-between;
     background: #fff;
@@ -52,6 +51,7 @@ table{
     border-collapse: collapse;
 }
 table tr{
+
     padding: 5px 0;
     border-bottom:1px solid#ddd;
 }

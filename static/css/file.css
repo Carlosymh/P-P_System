@@ -11,10 +11,10 @@ body{
 
 }
 
-.packing-form{
+.form_file{
     width: 80%;
     max-width:350px;
-    height: 150px;
+    height: 250px;
     margin: 60px auto auto auto ;
     background: #fff;
     box-shadow: 0 0 10px #aaa;
@@ -25,20 +25,45 @@ body{
     flex-direction: column;
     columns: 1;
 }
-
-.packing-form label{
+.form_file h2{
+    background: #01d4c7;
+    color: #fff;
+    width: 100%;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    margin-bottom: 5px;
+}
+.form_file label{
   width:100%;
   margin: 10px auto 5px auto;
   text-align:center;
 }
-.packing-form select,
-.packing-form input{
-    width: 80%;
+.form_file select,
+.form_file input{
     margin: 5px auto;
 }
 
-.packing-form input:focus{
+.form_file input:focus{
     outline-color: blue;
+}
+.table{
+    width: 50%;
+    height: 100vh;
+    text-align: center;
+
+}
+
+table{
+    width: 95%;
+    min-height: 80vh;
+    margin: 30px auto auto  auto;
+    justify-content: space-between;
+    background: #fff;
+    box-shadow: 0 0 10px #aaa;
+    border-radius:5px;
+    border-collapse: collapse;
+
 }
 
 .titulo2{
@@ -73,4 +98,3 @@ body{
     border: 2px solid #01d4c7;
 
 }
-
