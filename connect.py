@@ -1,6 +1,7 @@
 
-def connectBD (): 
-    host = "localHost"
-    user = "root" 
+def connectBD ():
+    host = "localhost"
+    user = "root"
+    Password= ""
     db = "muni"
-    return (host, user, db)
+    return (host, user,Password, db)
