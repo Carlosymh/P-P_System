@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response, Response, jsonify #pip install flask
-import requests
-import io
-import csv
+import requests # pip install requests
+import io # pip install requires.io
 import json
 from sre_constants import SUCCESS
 import cv2 #pip install opencv-python-headless or pip install opencv-python
@@ -9,8 +8,8 @@ import numpy as np
 from pyzbar.pyzbar import decode #pip install pyzbar or pip install pyzbar[scripts]
 from werkzeug.security import generate_password_hash, check_password_hash #pip install -U Werkzeug
 from datetime import datetime, date #pip install datetime
-import hashlib #pip installhashlib
-import qrcode #pip install qrcode
+import hashlib #pip install hashlib
+import qrcode #pip install qrcode #pip install Pillow
 import csv
 from connect import connectBD
 import pymysql #pip install pymysql #pip install mysql-connector-python-rf
@@ -91,7 +90,7 @@ def validarcontrasena(usuario):
       if data :
         if check_password_hash(data[4],password):
           session['UserName'] = data[1]
-          session['FullName'] = data[1] + data[2]
+          session['FullName'] = data[1] +" "+ data[2]
           session['User'] = data[3]
           session['SiteName'] = data[6]
           session['Rango'] = data[5]
@@ -170,7 +169,7 @@ def registroP():
         db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
         cur= db_connection.cursor()
         # Read a single record
-        sql = "SELECT * FROM `orders` WHERE RouteName=%s AND DeliveryDate=%s AND NOT Status =%s "
+        sql = "SELECT * FROM `orders` WHERE CLid=%s AND DeliveryDay=%s AND NOT Status =%s "
         cur.execute(sql, (route,deliveryday,status,))
         data = cur.fetchall()
         cur.close()
@@ -194,7 +193,7 @@ def registroMovPacking(route,deliveryday):
         db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
         cur= db_connection.cursor()
         # Read a single record
-        sql = "SELECT * FROM orders WHERE Ean=%s AND  RouteName=%s AND DeliveryDate=%s AND NOT Status=%s AND Site=%s  limit 1"
+        sql = "SELECT * FROM orders WHERE Ean=%s AND  CLid=%s AND DeliveryDay=%s AND NOT Status=%s AND Site=%s  limit 1"
         cur.execute(sql, (ean,route,deliveryday,status,Site))
         data = cur.fetchone()
         cur.close()
@@ -225,7 +224,7 @@ def registroMovPacking(route,deliveryday):
           cur= db_connection.cursor()
           # Create a new record
           sql = "INSERT INTO movements (RouteName,FuOrder,CLid,Ean,Description,Quantity,Process,Responsible,Site,DateTime) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-          cur.execute(sql,(route,data[6],data[14],ean,data[9],1,'Packing',session['UserName'],session['SiteName'],datetime.now()))
+          cur.execute(sql,(data[1],data[6],route,ean,data[9],1,'Packing',session['UserName'],session['SiteName'],datetime.now()))
           # connection is not autocommit by default. So you must commit to save
           # your changes.
           db_connection.commit()
@@ -234,10 +233,11 @@ def registroMovPacking(route,deliveryday):
           db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
           cur= db_connection.cursor()
           # Read a single record
-          sql = "SELECT * FROM orders WHERE  RouteName=%s AND DeliveryDate=%s AND NOT Status =%s AND Site=%s  "
-          cur.execute(sql, (route,deliveryday,status,Site))
+          sql = "SELECT * FROM orders WHERE  CLid=%s AND DeliveryDay=%s AND NOT Status =%s   "
+          cur.execute(sql, (route,deliveryday,status))
           data2 = cur.fetchall()
           cur.close()
+          print(data2)
           return render_template('actualizacion/Scan.html',Datos =session, data=data2)
         else:
           flash("Codigo Ean no Encontrado en esta Ruta")
@@ -245,10 +245,11 @@ def registroMovPacking(route,deliveryday):
           db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
           cur= db_connection.cursor()
           # Read a single record
-          sql = "SELECT * FROM orders WHERE  RouteName=%s AND DeliveryDate=%s AND NOT Status =%s AND Site=%s  "
-          cur.execute(sql, (route,deliveryday,status,Site))
+          sql = "SELECT * FROM orders WHERE  CLid=%s AND DeliveryDay=%s AND NOT Status =%s  "
+          cur.execute(sql, (route,deliveryday,status))
           data2 = cur.fetchall()
           cur.close()
+          print(data2)
           return render_template('actualizacion/Scan.html',Datos =session, data=data2)
   except Exception as error: 
     flash(str(error))
@@ -271,9 +272,10 @@ def registrarReceiving():
 
 @app.route('/RegistroMovReceiving/<receivingType>/<orderNumber>',methods=['POST','GET'])
 def registroMovReceiving(receivingType,orderNumber):
-  # try:
+  try:
       if request.method == 'POST':
         ean =  request.form['ean']
+        catidad =  request.form['catidad']
         link = connectBD()
         db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
         cur= db_connection.cursor()
@@ -283,12 +285,13 @@ def registroMovReceiving(receivingType,orderNumber):
         data = cur.fetchone()
         cur.close()
         if data:
+          catidad2= int(catidad)*int(data[4])
           link = connectBD()
           db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
           cur= db_connection.cursor()
           # Create a new record
           sql = "INSERT INTO receiving (PurchaseOrder,Type,Ean,EanMuni,ConversionUnit	,Quantity,Description,Responsible,Status,Site,DateTime) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-          cur.execute(sql,(orderNumber,receivingType,ean,data[2],data[4],1,data[3],session['UserName'],'In Process',session['SiteName'],datetime.now(),))
+          cur.execute(sql,(orderNumber,receivingType,ean,data[2],data[4],catidad2,data[3],session['UserName'],'In Process',session['SiteName'],datetime.now(),))
           # connection is not autocommit by default. So you must commit to save
           # your changes.
           db_connection.commit()
@@ -297,18 +300,18 @@ def registroMovReceiving(receivingType,orderNumber):
           db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
           cur= db_connection.cursor()
           # Read a single record
-          sql = "SELECT PurchaseOrder,	Type,	Ean,EanMuni, sum(ConversionUnit),Description FROM receiving WHERE  PurchaseOrder=%s AND Type=%s AND  Responsible =%s AND Status=%s  "
+          sql = "SELECT PurchaseOrder,	Type,Ean,EanMuni, Description, sum(Quantity) FROM receiving WHERE  PurchaseOrder=%s AND Type=%s AND  Responsible =%s AND Status=%s  GROUP BY PurchaseOrder,	Type,Ean, EanMuni, Description"
           cur.execute(sql, (orderNumber,receivingType,session['UserName'],'In Process',))
           data2 = cur.fetchall()
           cur.close()
-          return render_template('actualizacion/receivingscan.html',Datos =session, data=data2)
+          return render_template('actualizacion/receivingscan.html',Datos =session, data=data2, ReceivingType=receivingType,OrderNumber=orderNumber)
         else:
           link = connectBD()
           db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
           cur= db_connection.cursor()
           # Create a new record
           sql = "INSERT INTO receiving (PurchaseOrder,Type,Ean,Quantity,Responsible,Status,Site,DateTime) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
-          cur.execute(sql,(orderNumber,receivingType,ean,1,session['UserName'],'In Process',session['SiteName'],datetime.now(),))
+          cur.execute(sql,(orderNumber,receivingType,ean,catidad,session['UserName'],'In Process',session['SiteName'],datetime.now(),))
           # connection is not autocommit by default. So you must commit to save
           # your changes.
           db_connection.commit()
@@ -317,18 +320,36 @@ def registroMovReceiving(receivingType,orderNumber):
           db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
           cur= db_connection.cursor()
           # Read a single record
-          sql = "SELECT * FROM receiving WHERE  PurchaseOrder=%s AND Type=%s AND  Responsible =%s AND Status=%s  "
+          sql = "SELECT PurchaseOrder,	Type,Ean,EanMuni, Description, sum(Quantity) FROM receiving WHERE  PurchaseOrder=%s AND Type=%s AND  Responsible =%s AND Status=%s GROUP BY PurchaseOrder,	Type,Ean,EanMuni, Description "
           cur.execute(sql, (orderNumber,receivingType,session['UserName'],'In Process'))
           data2 = cur.fetchall()
           cur.close()
-          return render_template('actualizacion/receivingscan.html',Datos =session, data=data2)
-  # except Exception as error: 
-  #   flash(str(error))
-  #   return redirect('/Packing')
+          return render_template('actualizacion/receivingscan.html',Datos =session, data=data2, ReceivingType=receivingType,OrderNumber=orderNumber)
+  except Exception as error: 
+    flash(str(error))
+    return redirect('/Receiving')
+
+@app.route('/CerrarReceiving/<receivingType>/<orderNumber>',methods=['POST','GET'])
+def cerrarReceiving(receivingType,orderNumber):
+  try:
+      link = connectBD()
+      db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+      cur= db_connection.cursor()
+      # Create a new record
+      sql = "UPDATE receiving SET Status = %s WHERE PurchaseOrder=%s AND Type=%s AND  Responsible =%s AND Status=%s"
+      cur.execute(sql,('received',orderNumber,receivingType,session['UserName'],'In Process',))
+      # connection is not autocommit by default. So you must commit to save
+      # your changes.
+      db_connection.commit()
+      cur.close()
+      return redirect('/Receiving')
+  except Exception as error:
+    flash(str(error))
+    return redirect('/Receiving')
 
 @app.route('/Apimex',methods=['POST','GET'])
 def apimex():
-  # try:
+  try:
         url="https://metabase.munitienda.com/public/question/e8e1234f-6818-430f-a6c8-86585cd4ef09.json"
         response = requests.get(url)
         if  response.status_code == 200:
@@ -390,13 +411,13 @@ def apimex():
                 
           return redirect('/home')
 
-  # except Exception as error: 
-  #   flash(str(error))
-  #   return redirect('/home')
+  except Exception as error: 
+    flash(str(error))
+    return redirect('/home')
 
 @app.route('/Apicol',methods=['POST','GET'])
 def apicol():
-  # try:
+  try:
         url="https://metabase.munitienda.com/public/question/2bf5ae32-804a-4259-8f33-b7b7b6b9f9ec.json"
         response = requests.get(url)
         if  response.status_code == 200:
@@ -458,9 +479,9 @@ def apicol():
                 
           return redirect('/home')
 
-  # except Exception as error: 
-  #   flash(str(error))
-  #   return redirect('/home')
+  except Exception as error: 
+    flash(str(error))
+    return redirect('/home')
 
 #Registro de Usuarios
 @app.route('/registrar',methods=['POST'])
@@ -959,7 +980,7 @@ def reporte_receiving(rowi):
 
 @app.route('/Reporte_orders/<rowi>',methods=['POST','GET'])
 def reporte_orders(rowi):
-  # try:
+  try:
       if request.method == 'POST':
         if request.method == 'GET':
           session['rowi_orders']=rowi
@@ -1314,9 +1335,9 @@ def reporte_orders(rowi):
             data = cur.fetchall()
             cur.close()
             return render_template('reportes/t_orders.html',Datos = session,Infos =data)         
-  # except Exception as error: 
-  #   flash(str(error))
-  #   return render_template('index.html')
+  except Exception as error: 
+    flash(str(error))
+    return render_template('index.html')
 
 @app.route('/Reporte_movements/<rowi>',methods=['POST','GET'])
 def reporte_movements(rowi):

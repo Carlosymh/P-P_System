@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image" href="/static/img/Muni.icon.png">  
     <link rel="stylesheet" href="{{url_for('static', filename='css/nav.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='css/formscan.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/formscanreceiving.css')}}">
     <link href="//db.onlinewebfonts.com/c/69f1400361a215519d385199118a34aa?family=Harabara" rel="stylesheet" type="text/css"/>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,8 +32,13 @@
         <section class="form-register">
             <form id="contact-form" name="contact-form" class="contact-form" method="post" action="/RegistroMovReceiving/{{ReceivingType}}/{{OrderNumber}}">
                 <h2 class="titulo2"> Escanea un ean</h1>
+                    {%if data %}
+                    {%if data != 'No Aplica' %}
+                    <h2> O.C : {{data[0][0]}}</h2>
+                    {%endif%}
+                    {%endif%}
                     <label for="catidad"> catidad:
-                        <input name="catidad" type="number"  value="1" autofocus required>
+                        <input name="catidad" type="number"  value="1"  required>
                     </label>
                 <label for="ean"> EAN:
                     <input name="ean" type="text"  autofocus required>
@@ -42,30 +47,27 @@
                 
             </form>
 
-            <a href="/Packing" class="cerrar_btn">Cerrar</a>
+            <a href="/CerrarReceiving" class="cerrar_btn">Cerrar</a>
 
         </section>
         <section class="table">
             <table>
                 <thead>
                     <tr>
-                        <td>O.C</td>
                         <td>Type</td>
-                        <td>Ean</td>
                         <td>Ean Muni</td>
-                        <td>Sum Unidad de converción</td>
                         <td>Descripción</td>
+                        <td>Sum Unidad de converción</td>
                     </tr>
                 </thead>
                 <tbody>
                   {% for row in data %}
                   <tr>
-                      <td>{{row[0]}}</td>
                       <td>{{row[1]}}</td>
-                      <td>{{row[2]}}</td>
                       <td>{{row[3]}}</td>
                       <td>{{row[4]}}</td>
                       <td>{{row[5]}}</td>
+                      <td>{{row[6]}}</td>
                   </tr>
                   {%endfor%}
                 </tbody>
