@@ -613,7 +613,6 @@ def registrarProducto(ean,cantidad):
     flash(str(error))
     return redirect('/Inventory')
 
-
 # close receipt
 @app.route('/CerrarInventory',methods=['POST','GET'])
 def cerrarInventory():
