@@ -29,7 +29,9 @@ body::-webkit-scrollbar {
     padding: 5px;
     border-radius: 5px;
 }
+.container-formscan .form-register label,
 .container-formscan .form-register input{
+    display: block;
     margin: 15px auto;
 }
 .container-formscan .form-register input:focus{

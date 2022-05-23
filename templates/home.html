@@ -14,6 +14,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Khula:wght@800&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/206b5ce088.js" crossorigin="anonymous"></script>
     <title>Home</title>
 </head>
 <body>
@@ -29,33 +30,46 @@
     {% endblock %}
     {% block body%}
         <div class="fondo">
-        <section>
-            <div class="user"><i class="far fa-user"></i>
+            <div class="user"><i class="fa-solid fa-circle-user"></i>
                 <h1>¡Hola! </h1><h3>{{Datos['FullName']}}</h3>
                 </div>
-        </section>
     </div>
         <div class="container_form">
             <div class="mudulos">
                 <a href='/Packing' class='Proces_link'>
-                <i class="fas fa-box"></i> 
+                    <i class="fa-solid fa-boxes-packing"></i>
                  Packing</a>
             </div>
             <!-- <div class="mudulos">
                 <a href='/Picking' class='Proces_link'>
-                <i class="fas fa-dolly"></i>
+                <i class="fa-solid fa-dolly"></i>
                  Picking</a>
             </div> -->
-            <div class="mudulos">
+            <!-- <div class="mudulos">
                 <a href='/Picking' class='Proces_link'>
-                <i class="fas fa-pallet"></i>
+                <i class="fa-solid fa-land-mine-on"></i>
+                 Damage</a>
+            </div> -->
+            <!-- <div class="mudulos">
+                <a href='/Inventory' class='Proces_link'>
+                    <i class="fa-solid fa-boxes-stacked"></i>
                  Inventory</a>
+            </div> -->
+            <div class="mudulos">
+                <a href='/Receiving' class='Proces_link'>
+                <i class="fa-solid fa-truck-ramp-box"></i>
+                 Receiving</a>
+            </div>
+            <!-- <div class="mudulos">
+                <a href='/Receiving' class='Proces_link'>
+                    <i class="fa-solid fa-clock"></i>
+                missing</a>
             </div>
             <div class="mudulos">
                 <a href='/Receiving' class='Proces_link'>
-                <i class="fas fa-truck"></i>
-                 Receiving</a>
-            </div>
+                    <i class="fa-solid fa-road-circle-exclamation"></i>
+                Return</a>
+            </div> -->
                         
         </div>
 {% endblock %}

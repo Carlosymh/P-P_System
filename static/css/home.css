@@ -17,16 +17,13 @@ body{
     justify-content: center;
     text-align: center;
     align-items: center;
-    color: #00b1a8;
 }
 .user i{
-    background: #01d4c7;
-    padding: 20px;
-    color: #fff;
+    background: #fff;
+    color: #01d4c7;
     margin: auto;
-    font-size: 40px;
+    font-size: 80px;
     border-radius: 50%;
-    border: 3px solid #01d4c7;
 }
 .user h1{
     color: #fff;
@@ -46,7 +43,7 @@ body{
 
 } 
 .container_form{
-    width: 50%;
+    width: 80%;
     margin:30px auto auto auto;
     display: flex;
     flex-wrap: wrap;
@@ -54,7 +51,7 @@ body{
     justify-content: space-between;
 }
  .mudulos{
-    width: 50px;
+    width: 100px;
     height: 100px;
     display: flex;
     flex-direction: column;
@@ -63,15 +60,17 @@ body{
     text-decoration: none;
     text-align: center;
     padding: px 0;
-    font-size: 12px;
+    font-size: 15px;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
-    margin:25px  auto;
+    margin:20px  auto;
     color: #00b1a8;
     font-weight: 600;
     justify-content: center;
     text-align: center;
 }
 .mudulos a{
+    display: flex;
+    flex-direction: column;
     margin: 10px auto;
     text-decoration: none;
     color: #00b1a8;

@@ -19,7 +19,7 @@
     <div class="nav-main__menu">
         <div class="btn_nav"></div>
         <a href='/home' class='link_menu'><i class="fas fa-mobile">  Procesos</i> </a>
-        <button class="accordion"><i class="fas fa-table">  Reportes</i></button>
+        <button class="accordion"><i class="fa-solid fa-mobile-screen"></i>  Reportes</i></button>
         <div class="panel">
                     <a href='/Reporte_receiving/0' class='link_menu'>  Receiving</a>
                     <a href='/Reporte_movements/0' class='link_menu'>  movements</a>
@@ -27,8 +27,8 @@
         </div>
         
             {% if  Datos['Rango'] == 'Administrador' or Datos['Rango'] == 'Training' %}
-                <a href='/registro' class='link_menu'><i class="fas fa-user-plus">  Registro de Usuarios</i></a>
-                <a href='/files' class='link_menu'><i class="fas fa-upload">  Cargar Solicitudes</i></a>
+                <a href='/registro' class='link_menu'><i class="fa-solid fa-person-circle-plus"></i> Registro de Usuarios</i></a>
+                <a href='/files' class='link_menu'><i class="fa-solid fa-file-arrow-up"></i>  Cargar Solicitudes</i></a>
             {%endif%}
             
             
@@ -47,7 +47,7 @@
   </select>
   <input type="submit" value="Cambiar">
   </form>
-  <a href="/logout"><i class="fas fa-power-off"></i>  {{Datos['UserName']}}</a>
+  <a href="/logout"><i class="fa-solid fa-door-open"></i>  {{Datos['UserName']}}</a>
 </div>
 
 </nav>
