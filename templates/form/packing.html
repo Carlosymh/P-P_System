@@ -12,8 +12,8 @@
     <link href="//db.onlinewebfonts.com/c/69f1400361a215519d385199118a34aa?family=Harabara" rel="stylesheet" type="text/css"/>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Khula:wght@800&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/206b5ce088.js" crossorigin="anonymous"></script>
     <title>Packing</title>
 </head>
 <body>
@@ -34,6 +34,13 @@
                 <h2 class="titulo2"> Escanea un ean</h2>
                 <label  for="deliveryday" > Delivery Day:</label>
                     <input name="deliveryday" id="deliveryday" class="needs-validation" type="date" required >
+                <label  for="OG" > Operation Group:</label>
+                    <select name="OG" id="OG" required>
+                        <option value="CPG">CPG</option>
+                        <option value="F&V">F&V</option>
+                        <option value="R&F">R&F</option>
+                        <option value="EGG">EGG</option>
+                    </select>
                 <label for="route"> CL ID:</label>
                     <input  name="route" type="text" required="required" >
                     <input  type="submit" id="continuar"  value="Continue" >
