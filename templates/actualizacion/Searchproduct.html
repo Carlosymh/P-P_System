@@ -1,0 +1,44 @@
+{% extends 'nav.html'%}
+{% block cabezera%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image" href="/static/img/Muni.icon.png">   
+    <link rel="stylesheet" href="{{url_for('static', filename='css/file.css')}}">
+    <link href="//db.onlinewebfonts.com/c/69f1400361a215519d385199118a34aa?family=Harabara" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/nav.css')}}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Khula:wght@800&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/206b5ce088.js" crossorigin="anonymous"></script>
+    <title>Search Product</title>
+</head>
+<body>
+    {% with messages = get_flashed_messages() %}
+    {% if messages%}
+    {%for message in messages%}
+    <script>
+        alert('{{message}}')
+    </script>
+    {%endfor%}
+    {%endif%}
+    {%endwith%}
+    {% endblock %}
+    {% block body%}
+        <div class="fondo"></div>
+        <section>
+            <!-- enctype="multipart/form-data" -->
+            <form class="form_file" action="/SearchProduct/{{ean}}/{{cantidad}} " method="POST" " >
+                <h2> Buscar Producto </h2>
+                <span>Ean  '{{ean}}'  no registrado en catalogo</span>
+                <span>Busca si existe un producto parecido</span>
+                <span>En el catalogo</span>
+                <label for="desc">Descripción:</label>
+                <input  name="desc" type="text">
+                <input type="submit" id="continuar" name="enviar" value="enviar" >
+            </form>
+        </section>
+{% endblock %}
