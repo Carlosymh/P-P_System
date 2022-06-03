@@ -31,9 +31,16 @@
         <div class="fondo"></div>
         <section>
             <!-- enctype="multipart/form-data" -->
+            {% if cantidad %}
+            <form class="form_file" action="/SearchProductinv/{{ean}}/{{cantidad}} " method="POST" " >
+                <h2> Buscar Producto </h2>
+                <span>Ean: '{{ean}}'  no registrado en catalogo</span>
+                <span>Cantidad:  '{{cantidad}}'  </span>
+            {% else %}
             <form class="form_file" action="/SearchProduct/{{ean}} " method="POST" " >
                 <h2> Buscar Producto </h2>
-                <span>Ean  '{{ean}}'  no registrado en catalogo</span>
+                <span>Ean: '{{ean}}'  no registrado en catalogo</span>
+                {%endif%}
                 <span>Busca si existe un producto parecido</span>
                 <span>En el catalogo</span>
                 <label for="desc">Descripción:</label>
