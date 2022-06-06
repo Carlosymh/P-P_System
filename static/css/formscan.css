@@ -56,6 +56,11 @@ table tr{
     border-bottom:1px solid#ddd;
 }
 
+.verde{
+    background: rgb(2, 228, 2);
+    color:rgb(15, 62, 15);
+    
+}
 .titulo{
     background: #01d4c7;
     color: #fff;

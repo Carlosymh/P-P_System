@@ -212,8 +212,16 @@ def registroP():
         cur.execute(sql, (route,deliveryday,status,OG,Site, ))
         data = cur.fetchall()
         cur.close()
+        link = connectBD()
+        db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+        cur= db_connection.cursor()
+        # Read a single record
+        sql = "SELECT * FROM `orders` WHERE CLid=%s AND DeliveryDay=%s AND  Status =%s AND OperationGroup=%s AND Site=%s "
+        cur.execute(sql, (route,deliveryday,status,OG,Site, ))
+        data3 = cur.fetchall()
+        cur.close()
         if data :
-          return render_template('actualizacion/Scan.html',Datos =session, data=data)
+          return render_template('actualizacion/Scan.html',Datos =session, data=data,dataf=data3)
         else:
           flash("No hay Ordenes Pendientes es esta ruta")
           return redirect('/Packing')
@@ -226,7 +234,7 @@ def registroP():
 def registroMovPacking(route,deliveryday,OG):
   try:
       if request.method == 'POST':
-        ean =  request.form['ean']
+        ean =  request.form['ean'].strip()
         status="Finished"
         Site=session['SiteName']
         link = connectBD()
@@ -286,11 +294,18 @@ def registroMovPacking(route,deliveryday,OG):
               cur.execute(sql, (route,deliveryday,status, OG, Site))
               data2 = cur.fetchall()
               cur.close()
+              link = connectBD()
+              db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+              cur= db_connection.cursor()
+              # Read a single record
+              sql = "SELECT * FROM orders WHERE  CLid=%s AND DeliveryDay=%s AND Status =%s AND OperationGroup=%s AND Site=%s  "
+              cur.execute(sql, (route,deliveryday,status, OG, Site))
+              data3 = cur.fetchall()
+              cur.close()
               if data2:
-                return render_template('actualizacion/Scan.html',Datos =session, data=data2)
+                return render_template('actualizacion/Scan.html',Datos =session, data=data2, dataf=data3)
               else:
-                flash("No hay Ordenes Pendientes es esta ruta")
-                return redirect('/Packing')
+                return render_template('actualizacion/Scan.html',Datos =session, dataf=data3)
             else:
               flash("Codigo Ean no Encontrado en esta Ruta")
               link = connectBD()
@@ -301,8 +316,15 @@ def registroMovPacking(route,deliveryday,OG):
               cur.execute(sql, (route,deliveryday,status, OG, Site))
               data2 = cur.fetchall()
               cur.close()
-              print(data2)
-              return render_template('actualizacion/Scan.html',Datos =session, data=data2)
+              link = connectBD()
+              db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+              cur= db_connection.cursor()
+              # Read a single record
+              sql = "SELECT * FROM orders WHERE  CLid=%s AND DeliveryDay=%s AND Status =%s AND OperationGroup=%s AND Site=%s "
+              cur.execute(sql, (route,deliveryday,status, OG, Site))
+              data3 = cur.fetchall()
+              cur.close()
+              return render_template('actualizacion/Scan.html',Datos =session, data=data2, dataf=data3)
 
         else:
             link = connectBD()
@@ -353,11 +375,18 @@ def registroMovPacking(route,deliveryday,OG):
               cur.execute(sql, (route,deliveryday,status, OG, Site))
               data2 = cur.fetchall()
               cur.close()
+              link = connectBD()
+              db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+              cur= db_connection.cursor()
+              # Read a single record
+              sql = "SELECT * FROM orders WHERE  CLid=%s AND DeliveryDay=%s AND Status =%s AND OperationGroup=%s AND Site=%s  "
+              cur.execute(sql, (route,deliveryday,status, OG, Site))
+              data3 = cur.fetchall()
+              cur.close()
               if data2:
-                return render_template('actualizacion/Scan.html',Datos =session, data=data2)
+                return render_template('actualizacion/Scan.html',Datos =session, data=data2, dataf=data3)
               else:
-                flash("No hay Ordenes Pendientes es esta ruta")
-                return redirect('/Packing')
+                return render_template('actualizacion/Scan.html',Datos =session, dataf=data3)
             else:
               flash("Codigo Ean no Encontrado en esta Ruta")
               link = connectBD()
@@ -368,8 +397,15 @@ def registroMovPacking(route,deliveryday,OG):
               cur.execute(sql, (route,deliveryday,status, OG, Site))
               data2 = cur.fetchall()
               cur.close()
-              print(data2)
-              return render_template('actualizacion/Scan.html',Datos =session, data=data2)
+              link = connectBD()
+              db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+              cur= db_connection.cursor()
+              # Read a single record
+              sql = "SELECT * FROM orders WHERE  CLid=%s AND DeliveryDay=%s AND Status =%s AND OperationGroup=%s AND Site=%s "
+              cur.execute(sql, (route,deliveryday,status, OG, Site))
+              data3 = cur.fetchall()
+              cur.close()
+              return render_template('actualizacion/Scan.html',Datos =session, data=data2, dataf=data3)
 
   except Exception as error:
     flash(str(error))
@@ -396,7 +432,7 @@ def registrarReceiving():
 def registroMovReceiving(receivingType,orderNumber):
   try:
       if request.method == 'POST':
-        ean =  request.form['ean']
+        ean =  request.form['ean'].strip()
         cantidad =  request.form['cantidad']
         link = connectBD()
         db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
@@ -583,7 +619,7 @@ def registrarInventory():
 def formsearch():  
   try:
       if request.method == 'POST':
-        ean =  request.form['ean']
+        ean =  request.form['ean'].strip()
         link = connectBD()
         db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
         cur= db_connection.cursor()
@@ -723,9 +759,9 @@ def registrarProductoinv(ean,cantidad):
 # receiving mov register
 @app.route('/RegistrarProducto/<ean>',methods=['POST','GET'])
 def registrarProducto(ean):
-  try:
+  # try:
       if request.method == 'POST':
-        EAN_MUNI =  request.form['EAN_MUNI']
+        EAN_MUNI =  request.form['EAN_MUNI'].strip()
         Producto =  request.form['Producto']
         Factor_de_Conversión =  request.form['Factor_de_Conversión']
         link = connectBD()
@@ -747,9 +783,9 @@ def registrarProducto(ean):
         data = cur.fetchone()
         cur.close()
         return render_template('form/product.html',Datos =session, data=data)
-  except Exception as error:
-    flash(str(error))
-    return redirect('/Product')
+  # except Exception as error:
+  #   flash(str(error))
+  #   return redirect('/Product')
 
 # Search Product
 @app.route('/SearchProductinv/<ean>/<cantidad>',methods=['POST','GET'])
@@ -792,7 +828,7 @@ def searchProduct(ean):
 # receiving register 
 @app.route('/RegistrarDamage',methods=['POST','GET'])
 def registrarDamage():
-  try:
+  # try:
       if request.method == 'POST':
         cantidad =  request.form['cantidad']
         Motivo =  request.form['Motivo']
@@ -897,9 +933,9 @@ def registrarDamage():
           data2 = cur.fetchall()
           cur.close()
           return render_template('form/damage.html',Datos =session, data=data2)
-  except Exception as error: 
-    flash(str(error))
-    return redirect('/Damage')
+  # except Exception as error: 
+  #   flash(str(error))
+  #   return redirect('/Damage')
 
 # close receipt
 @app.route('/CerrarDamage',methods=['POST','GET'])
