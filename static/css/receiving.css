@@ -14,7 +14,7 @@ body{
 .packing-form{
     width: 80%;
     max-width:350px;
-    height: 200px;
+    height: calc(100%+20px);
     margin: 60px auto auto auto ;
     background: #fff;
     box-shadow: 0 0 10px #aaa;
@@ -44,7 +44,6 @@ body{
 .titulo2{
     width: 100%;
     margin-top: 0;
-
     background: #01d4c7;
     color: #fff;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
@@ -56,7 +55,7 @@ body{
 #continuar{
     width: 70%;
     display: flex;
-    margin:10px auto 3px auto;    
+    margin:10px auto 20px auto;    
     justify-content: center;
     font-weight: bolder;
     font-size: 15px;

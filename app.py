@@ -7,7 +7,8 @@ import cv2 #pip install opencv-python-headless or pip install opencv-python
 import numpy as np  
 from pyzbar.pyzbar import decode #pip install pyzbar or pip install pyzbar[scripts]
 from werkzeug.security import generate_password_hash, check_password_hash #pip install -U Werkzeug
-from datetime import datetime, date #pip install datetime
+from datetime import datetime, date #pip install datetime pip install pytz
+import pytz 
 import hashlib #pip install hashlib
 import qrcode #pip install qrcode #pip install Pillow
 import csv
@@ -16,6 +17,8 @@ import pymysql #pip install pymysql #pip install mysql-connector-python-rf
 import os
 # import subprocess
 import unicodedata
+  
+UTC = pytz.utc 
 
 
 # settings
@@ -237,6 +240,11 @@ def registroMovPacking(route,deliveryday,OG):
         ean =  request.form['ean'].strip()
         status="Finished"
         Site=session['SiteName']
+        
+        if session['SiteName']=='CDMX01':
+          timeZ = pytz.timezone('America/Mexico_City')
+        elif session['SiteName']=='MEDELLIN01':
+          timeZ = pytz.timezone('America/Bogota')
         link = connectBD()
         db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
         cur= db_connection.cursor()
@@ -281,7 +289,7 @@ def registroMovPacking(route,deliveryday,OG):
               cur= db_connection.cursor()
               # Create a new record
               sql = "INSERT INTO movements (RouteName,FuOrder,CLid,Ean,Description,Quantity,Process,Responsible,Site,DateTime) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-              cur.execute(sql,(data[1],data[6],route,product[2],data[9],1,'Packing',session['UserName'],session['SiteName'],datetime.now()))
+              cur.execute(sql,(data[1],data[6],route,product[2],data[9],1,'Packing',session['UserName'],session['SiteName'],datetime.now(timeZ)))
               # connection is not autocommit by default. So you must commit to save
               # your changes.
               db_connection.commit()
@@ -362,7 +370,7 @@ def registroMovPacking(route,deliveryday,OG):
               cur= db_connection.cursor()
               # Create a new record
               sql = "INSERT INTO movements (RouteName,FuOrder,CLid,Ean,Description,Quantity,Process,Responsible,Site,DateTime) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-              cur.execute(sql,(data[1],data[6],route,ean,data[9],1,'Packing',session['UserName'],session['SiteName'],datetime.now()))
+              cur.execute(sql,(data[1],data[6],route,ean,data[9],1,'Packing',session['UserName'],session['SiteName'],datetime.now(timeZ)))
               # connection is not autocommit by default. So you must commit to save
               # your changes.
               db_connection.commit()
@@ -434,6 +442,10 @@ def registroMovReceiving(receivingType,orderNumber):
       if request.method == 'POST':
         ean =  request.form['ean'].strip()
         cantidad =  request.form['cantidad']
+        if session['SiteName']=='CDMX01':
+          timeZ = pytz.timezone('America/Mexico_City')
+        elif session['SiteName']=='MEDELLIN01':
+          timeZ = pytz.timezone('America/Bogota')
         link = connectBD()
         db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
         cur= db_connection.cursor()
@@ -449,7 +461,7 @@ def registroMovReceiving(receivingType,orderNumber):
           cur= db_connection.cursor()
           # Create a new record
           sql = "INSERT INTO receiving (PurchaseOrder,Type,Ean,EanMuni,ConversionUnit	,Quantity,Description,Responsible,Status,Site,DateTime) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-          cur.execute(sql,(orderNumber,receivingType,ean,data[2],data[4],catidad2,data[3],session['UserName'],'In Process',session['SiteName'],datetime.now(),))
+          cur.execute(sql,(orderNumber,receivingType,ean,data[2],data[4],catidad2,data[3],session['UserName'],'In Process',session['SiteName'],datetime.now(timeZ),))
           # connection is not autocommit by default. So you must commit to save
           # your changes.
           db_connection.commit()
@@ -458,7 +470,38 @@ def registroMovReceiving(receivingType,orderNumber):
           db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
           cur= db_connection.cursor()
           # Read a single record
-          sql = "SELECT PurchaseOrder,	Type,Ean,EanMuni, Description, sum(Quantity) FROM receiving WHERE  PurchaseOrder=%s AND Type=%s AND  Responsible =%s AND Status=%s AND Site=%s GROUP BY PurchaseOrder,	Type,Ean, EanMuni, Description"
+          sql = "SELECT * FROM receivingtable WHERE Ean_Muni =%s  limit 1  "
+          cur.execute(sql, (data[2]))
+          Rdata = cur.fetchone()
+          cur.close()
+          if Rdata:
+            cantidadr = int(Rdata[5])+int(catidad2)
+            link = connectBD()
+            db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+            cur= db_connection.cursor()
+            # Create a new record
+            sql = "UPDATE receivingtable SET  Cantidad =%s, Fecha_de_Actualizacion=%s WHERE PurchaseOrder=%s AND Type=%s AND Ean_Muni=%s AND  Status=%s AND Site=%s "
+            cur.execute(sql,(cantidadr,datetime.now(timeZ),orderNumber,receivingType,data[2],'In Process',session['SiteName'],))
+            # connection is not autocommit by default. So you must commit to save
+            # your changes.
+            db_connection.commit()
+            cur.close()
+          else:
+            link = connectBD()
+            db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+            cur= db_connection.cursor()
+            # Create a new record
+            sql = "INSERT INTO receivingtable (	PurchaseOrder,Type,Ean_Muni,Descripcion,Cantidad,Responsable,	Site,	Status,Fecha_de_Actualizacion) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            cur.execute(sql,(orderNumber,receivingType,data[2],data[3],catidad2,session['UserName'],session['SiteName'],'In Process',datetime.now(timeZ),))
+            # connection is not autocommit by default. So you must commit to save
+            # your changes.
+            db_connection.commit()
+            cur.close()
+          link = connectBD()
+          db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+          cur= db_connection.cursor()
+          # Read a single record
+          sql = "SELECT PurchaseOrder,	Type,Ean_Muni, Descripcion, Cantidad,Fecha_de_Actualizacion FROM receivingtable WHERE  PurchaseOrder=%s AND Type=%s AND  Responsable =%s AND Status=%s AND Site=%s ORDER BY Fecha_de_Actualizacion DESC"
           cur.execute(sql, (orderNumber,receivingType,session['UserName'],'In Process',session['SiteName'],))
           data2 = cur.fetchall()
           cur.close()
@@ -469,7 +512,7 @@ def registroMovReceiving(receivingType,orderNumber):
           cur= db_connection.cursor()
           # Create a new record
           sql = "INSERT INTO receiving (PurchaseOrder,Type,Ean,Quantity,Responsible,Status,Site,DateTime) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
-          cur.execute(sql,(orderNumber,receivingType,ean,cantidad,session['UserName'],'In Process',session['SiteName'],datetime.now(),))
+          cur.execute(sql,(orderNumber,receivingType,ean,cantidad,session['UserName'],'In Process',session['SiteName'],datetime.now(timeZ),))
           # connection is not autocommit by default. So you must commit to save
           # your changes.
           db_connection.commit()
@@ -478,8 +521,39 @@ def registroMovReceiving(receivingType,orderNumber):
           db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
           cur= db_connection.cursor()
           # Read a single record
-          sql = "SELECT PurchaseOrder,	Type,Ean,EanMuni, Description, sum(Quantity) FROM receiving WHERE  PurchaseOrder=%s AND Type=%s AND  Responsible =%s AND Status=%s AND Site=%s GROUP BY PurchaseOrder,	Type,Ean,EanMuni, Description "
-          cur.execute(sql, (orderNumber,receivingType,session['UserName'],'In Process',session['SiteName']))
+          sql = "SELECT * FROM receivingtable WHERE Ean_Muni =%s  limit 1  "
+          cur.execute(sql, (ean))
+          Rdata = cur.fetchone()
+          cur.close()
+          if Rdata:
+            cantidadr = int(Rdata[5])+int(cantidad)
+            link = connectBD()
+            db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+            cur= db_connection.cursor()
+            # Create a new record
+            sql = "UPDATE receivingtable SET  Cantidad =%s, Fecha_de_Actualizacion=%s WHERE PurchaseOrder=%s AND Type=%s AND Ean_Muni=%s AND  Status=%s AND Site=%s "
+            cur.execute(sql,(cantidadr,datetime.now(timeZ),orderNumber,receivingType,ean,'In Process',session['SiteName'],))
+            # connection is not autocommit by default. So you must commit to save
+            # your changes.
+            db_connection.commit()
+            cur.close()
+          else:
+            link = connectBD()
+            db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+            cur= db_connection.cursor()
+            # Create a new record
+            sql = "INSERT INTO receivingtable (	PurchaseOrder,Type,Ean_Muni,Descripcion,Cantidad,Responsable,	Site,	Status,Fecha_de_Actualizacion) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            cur.execute(sql,(orderNumber,receivingType,ean,'No reistrado',cantidad,session['UserName'],session['SiteName'],'In Process',datetime.now(timeZ),))
+            # connection is not autocommit by default. So you must commit to save
+            # your changes.
+            db_connection.commit()
+            cur.close()
+          link = connectBD()
+          db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+          cur= db_connection.cursor()
+          # Read a single record
+          sql = "SELECT PurchaseOrder,	Type,Ean_Muni, Descripcion, Cantidad,Fecha_de_Actualizacion FROM receivingtable WHERE  PurchaseOrder=%s AND Type=%s AND  Responsable =%s AND Status=%s AND Site=%s ORDER BY Fecha_de_Actualizacion DESC"
+          cur.execute(sql, (orderNumber,receivingType,session['UserName'],'In Process',session['SiteName'],))
           data2 = cur.fetchall()
           cur.close()
           return render_template('actualizacion/receivingscan.html',Datos =session, data=data2, ReceivingType=receivingType,OrderNumber=orderNumber)
@@ -509,12 +583,16 @@ def cerrarReceiving(receivingType,orderNumber):
 # receiving register 
 @app.route('/RegistrarInventory',methods=['POST','GET'])
 def registrarInventory():
-  try:
+  # try:
       if request.method == 'POST':
         receivingType="Inventory"
         orderNumber="No aplica"
         ean =  request.form['ean']
         cantidad =  request.form['cantidad']
+        if session['SiteName']=='CDMX01':
+          timeZ = pytz.timezone('America/Mexico_City')
+        elif session['SiteName']=='MEDELLIN01':
+          timeZ = pytz.timezone('America/Bogota')
         link = connectBD()
         db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
         cur= db_connection.cursor()
@@ -539,8 +617,8 @@ def registrarInventory():
               db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
               cur= db_connection.cursor()
               # Create a new record
-              sql = "UPDATE inventory SET Status = %s, Cantidad_Anterior=%s, Cantidad_Actual=%s, inventoryUser=5s,	Fecha_de_Actualizacion=%s WHERE CB_Captura=%s AND Site=%s "
-              cur.execute(sql,('In Process',datainv[5],cantidad2,session['UserName'],datetime.now(),ean,session['SiteName'],))
+              sql = "UPDATE inventory SET Status = %s, Cantidad_Anterior=%s, Cantidad_Actual=%s, inventoryUser=%s,	Fecha_de_Actualizacion=%s WHERE CB_Captura=%s AND Site=%s "
+              cur.execute(sql,('In Process',datainv[5],cantidad2,session['UserName'],datetime.now(timeZ),ean,session['SiteName'],))
               # connection is not autocommit by default. So you must commit to save
               # your changes.
               db_connection.commit()
@@ -563,7 +641,7 @@ def registrarInventory():
             cur= db_connection.cursor()
             # Create a new record
             sql = "INSERT INTO receiving (PurchaseOrder,Type,Ean,EanMuni,ConversionUnit	,Quantity,Description,Responsible,Status,Site,DateTime) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-            cur.execute(sql,(orderNumber,receivingType,ean,data[2],data[4],catidad2,data[3],session['UserName'],'In Process',session['SiteName'],datetime.now(),))
+            cur.execute(sql,(orderNumber,receivingType,ean,data[2],data[4],catidad2,data[3],session['UserName'],'In Process',session['SiteName'],datetime.now(timeZ),))
             # connection is not autocommit by default. So you must commit to save
             # your changes.
             db_connection.commit()
@@ -584,7 +662,7 @@ def registrarInventory():
             cur= db_connection.cursor()
             # Create a new record
             sql = "INSERT INTO inventory (CB_Captura,EAN_MUNI,Producto,Cantidad_Anterior,Cantidad_Actual,Unidad_de_Medida,Status,inventoryUser,Fecha_de_Actualizacion,Site) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-            cur.execute(sql,(ean,data[2],data[3],0,cantidad2,data[4],'In Process',session['UserName'],datetime.now(),session['SiteName'],))
+            cur.execute(sql,(ean,data[2],data[3],0,cantidad2,data[4],'In Process',session['UserName'],datetime.now(timeZ),session['SiteName'],))
             # connection is not autocommit by default. So you must commit to save
             # your changes.
             db_connection.commit()
@@ -594,7 +672,7 @@ def registrarInventory():
             cur= db_connection.cursor()
             # Create a new record
             sql = "INSERT INTO receiving (PurchaseOrder,Type,Ean,EanMuni,ConversionUnit	,Quantity,Description,Responsible,Status,Site,DateTime) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-            cur.execute(sql,(orderNumber,receivingType,ean,data[2],data[4],catidad2,data[3],session['UserName'],'In Process',session['SiteName'],datetime.now(),))
+            cur.execute(sql,(orderNumber,receivingType,ean,data[2],data[4],catidad2,data[3],session['UserName'],'In Process',session['SiteName'],datetime.now(timeZ),))
             # connection is not autocommit by default. So you must commit to save
             # your changes.
             db_connection.commit()
@@ -610,9 +688,9 @@ def registrarInventory():
             return render_template('form/inventory.html',Datos =session, data=data2)
         else:
           return render_template('actualizacion/Searchproduct.html',Datos =session,ean=ean,cantidad=cantidad)
-  except Exception as error: 
-    flash(str(error))
-    return redirect('/Inventory')
+  # except Exception as error: 
+  #   flash(str(error))
+  #   return redirect('/Inventory')
 
 # Search Product
 @app.route('/FormSearch',methods=['POST','GET'])
@@ -646,6 +724,10 @@ def registrarProductoinv(ean,cantidad):
         orderNumber="No aplica"
         EAN_MUNI =  request.form['EAN_MUNI']
         Producto =  request.form['Producto']
+        if session['SiteName']=='CDMX01':
+          timeZ = pytz.timezone('America/Mexico_City')
+        elif session['SiteName']=='MEDELLIN01':
+          timeZ = pytz.timezone('America/Bogota')
         Factor_de_Conversión =  request.form['Factor_de_Conversión']
         link = connectBD()
         db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
@@ -682,7 +764,7 @@ def registrarProductoinv(ean,cantidad):
               cur= db_connection.cursor()
               # Create a new record
               sql = "UPDATE inventory SET Status = %s, Cantidad_Anterior=%s, Cantidad_Actual=%s, inventoryUser=5s,	Fecha_de_Actualizacion=%s WHERE CB_Captura=%s AND Site=%s "
-              cur.execute(sql,('In Process',datainv[5],cantidad2,session['UserName'],datetime.now(),ean,session['SiteName'],))
+              cur.execute(sql,('In Process',datainv[5],cantidad2,session['UserName'],datetime.now(timeZ),ean,session['SiteName'],))
               # connection is not autocommit by default. So you must commit to save
               # your changes.
               db_connection.commit()
@@ -705,7 +787,7 @@ def registrarProductoinv(ean,cantidad):
             cur= db_connection.cursor()
             # Create a new record
             sql = "INSERT INTO receiving (PurchaseOrder,Type,Ean,EanMuni,ConversionUnit	,Quantity,Description,Responsible,Status,Site,DateTime) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-            cur.execute(sql,(orderNumber,receivingType,ean,data[2],data[4],catidad2,data[3],session['UserName'],'In Process',session['SiteName'],datetime.now(),))
+            cur.execute(sql,(orderNumber,receivingType,ean,data[2],data[4],catidad2,data[3],session['UserName'],'In Process',session['SiteName'],datetime.now(timeZ),))
             # connection is not autocommit by default. So you must commit to save
             # your changes.
             db_connection.commit()
@@ -726,7 +808,7 @@ def registrarProductoinv(ean,cantidad):
             cur= db_connection.cursor()
             # Create a new record
             sql = "INSERT INTO inventory (CB_Captura,EAN_MUNI,Producto,Cantidad_Anterior,Cantidad_Actual,Unidad_de_Medida,Status,inventoryUser,Fecha_de_Actualizacion,Site) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-            cur.execute(sql,(ean,data[2],data[3],0,cantidad2,data[4],'In Process',session['UserName'],datetime.now(),session['SiteName'],))
+            cur.execute(sql,(ean,data[2],data[3],0,cantidad2,data[4],'In Process',session['UserName'],datetime.now(timeZ),session['SiteName'],))
             # connection is not autocommit by default. So you must commit to save
             # your changes.
             db_connection.commit()
@@ -736,7 +818,7 @@ def registrarProductoinv(ean,cantidad):
             cur= db_connection.cursor()
             # Create a new record
             sql = "INSERT INTO receiving (PurchaseOrder,Type,Ean,EanMuni,ConversionUnit	,Quantity,Description,Responsible,Status,Site,DateTime) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-            cur.execute(sql,(orderNumber,receivingType,ean,data[2],data[4],catidad2,data[3],session['UserName'],'In Process',session['SiteName'],datetime.now(),))
+            cur.execute(sql,(orderNumber,receivingType,ean,data[2],data[4],catidad2,data[3],session['UserName'],'In Process',session['SiteName'],datetime.now(timeZ),))
             # connection is not autocommit by default. So you must commit to save
             # your changes.
             db_connection.commit()
@@ -833,6 +915,10 @@ def registrarDamage():
         cantidad =  request.form['cantidad']
         Motivo =  request.form['Motivo']
         ean =  request.form['ean']
+        if session['SiteName']=='CDMX01':
+          timeZ = pytz.timezone('America/Mexico_City')
+        elif session['SiteName']=='MEDELLIN01':
+          timeZ = pytz.timezone('America/Bogota')
         link = connectBD()
         db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
         cur= db_connection.cursor()
@@ -848,7 +934,7 @@ def registrarDamage():
           cur= db_connection.cursor()
           # Create a new record
           sql = "INSERT INTO mermas (Ean,	EAN_MUNI,Description,Quantity,Reason,Responsible,Status,Site,DateTime) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-          cur.execute(sql,(ean,data[2],data[3],catidad2,Motivo,session['UserName'],'In Process',session['SiteName'],datetime.now(),))
+          cur.execute(sql,(ean,data[2],data[3],catidad2,Motivo,session['UserName'],'In Process',session['SiteName'],datetime.now(timeZ),))
           # connection is not autocommit by default. So you must commit to save
           # your changes.
           db_connection.commit()
@@ -868,7 +954,7 @@ def registrarDamage():
             cur= db_connection.cursor()
             # Create a new record
             sql = "UPDATE inventory SET Cantidad_Actual = %s, Fecha_de_Actualizacion = %s WHERE EAN_MUNI=%s AND  Site=%s "
-            cur.execute(sql,(cantidadinv,datetime.now(),data[2],session['SiteName']))
+            cur.execute(sql,(cantidadinv,datetime.now(timeZ),data[2],session['SiteName']))
             # connection is not autocommit by default. So you must commit to save
             # your changes.
             db_connection.commit()
@@ -898,7 +984,7 @@ def registrarDamage():
             cur= db_connection.cursor()
             # Create a new record
             sql = "UPDATE inventory SET Cantidad_Actual = %s, Fecha_de_Actualizacion = %s WHERE EAN_MUNI=%s AND  Site=%s "
-            cur.execute(sql,(cantidadinv,datetime.now(),Inv[1],session['SiteName']))
+            cur.execute(sql,(cantidadinv,datetime.now(timeZ),Inv[1],session['SiteName']))
             # connection is not autocommit by default. So you must commit to save
             # your changes.
             db_connection.commit()
@@ -908,7 +994,7 @@ def registrarDamage():
             cur= db_connection.cursor()
             # Create a new record
             sql = "INSERT INTO mermas (Ean,	EAN_MUNI,Description,Quantity,Reason,Responsible,Status,Site,DateTime) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-            cur.execute(sql,(ean,Inv[1],Inv[2],cantidad,Motivo,session['UserName'],'In Process',session['SiteName'],datetime.now(),))
+            cur.execute(sql,(ean,Inv[1],Inv[2],cantidad,Motivo,session['UserName'],'In Process',session['SiteName'],datetime.now(timeZ),))
             # connection is not autocommit by default. So you must commit to save
             # your changes.
             db_connection.commit()
@@ -919,7 +1005,7 @@ def registrarDamage():
             cur= db_connection.cursor()
             # Create a new record
             sql = "INSERT INTO mermas (Ean,	EAN_MUNI,Description,Quantity,Reason,Responsible,Status,Site,DateTime) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-            cur.execute(sql,(ean,ean,'No Registrado',cantidad,Motivo,session['UserName'],'In Process',session['SiteName'],datetime.now(),))
+            cur.execute(sql,(ean,ean,'No Registrado',cantidad,Motivo,session['UserName'],'In Process',session['SiteName'],datetime.now(timeZ),))
             # connection is not autocommit by default. So you must commit to save
             # your changes.
             db_connection.commit()
@@ -2524,7 +2610,7 @@ def Files_():
 # data file register 
 @app.route('/CargarDatos',methods=['POST','GET'])
 def uploadFiles():
-  try:
+  # try:
     if 'FullName' in session:
       # get the uploaded file
       file =request.files['datos']
@@ -2537,7 +2623,6 @@ def uploadFiles():
           for row in data:
             if i >0:
               if row[2] != '#N/A':
-                now= datetime.now()
                 link = connectBD()
                 db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8mb4", init_command="set names utf8mb4")
                 cur= db_connection.cursor()
@@ -2615,9 +2700,9 @@ def uploadFiles():
             i+=1 
         flash(str(i)+' Registros Exitoso')
         return redirect('/files')
-  except Exception as error:
-    flash(str(error))
-    return redirect('/files')
+  # except Exception as error:
+  #   flash(str(error))
+  #   return redirect('/files')
 
 # cam scan fuction
 @app.route('/scanercam',methods=['POST','GET'])
