@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 import requests # pip install requests
 import io # pip install requires.io
 import json
-from sre_constants import SUCCESS
 import cv2 #pip install opencv-python-headless or pip install opencv-python
 import numpy as np  
 from pyzbar.pyzbar import decode #pip install pyzbar or pip install pyzbar[scripts]
@@ -15,7 +14,6 @@ import csv
 from connect import connectBD
 import pymysql #pip install pymysql #pip install mysql-connector-python-rf
 import os
-# import subprocess
 import unicodedata
   
 UTC = pytz.utc 
