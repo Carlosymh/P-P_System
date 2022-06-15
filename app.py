@@ -263,8 +263,8 @@ def registroMovPacking(route,deliveryday,OG):
             if data :
               Packer=session['UserName']
               OriginalQuantity=data[12]
-              CurrentQuantity	=data[16]+1
-              PendingQuantity=data[17]-1
+              CurrentQuantity	=int(data[16])+int(product[4])
+              PendingQuantity=int(data[17])-int(product[4])
               if OriginalQuantity==CurrentQuantity:
                 estatus= 'Finished'
               elif CurrentQuantity>0 and PendingQuantity> 0:
