@@ -20,8 +20,8 @@ UTC = pytz.utc
 
 
 # settings
-app = Flask(__name__)
-app.secret_key = 'mysecretkey'
+application = Flask(__name__)
+application.secret_key = 'mysecretkey'
 UPLOAD_FOLDER = 'static/file/'
 
 # Function for passwords 
@@ -29,7 +29,7 @@ def _create_password(password):
    return generate_password_hash(password,'pbkdf2:sha256:30',30)
 
 # index page (user form)
-@app.route('/')
+@application.route('/')
 def Index():
   try:
     if 'FullName' in session:
@@ -41,7 +41,7 @@ def Index():
     return render_template('index.html')
 
 # password form 
-@app.route('/inicio', methods=['POST'])
+@application.route('/inicio', methods=['POST'])
 def validarusuaro():
   if request.method == 'POST':
       usuario =  request.form['user'] 
@@ -61,7 +61,7 @@ def validarusuaro():
         return render_template('index.html')
  
 # form to change site
-@app.route('/cambiar', methods=['POST'])
+@application.route('/cambiar', methods=['POST'])
 def cambiarfacility():
   try:
     if request.method == 'POST':
@@ -72,7 +72,7 @@ def cambiarfacility():
     return redirect('/home')
     
 # user validation
-@app.route('/validar/<usuario>', methods=['POST'])
+@application.route('/validar/<usuario>', methods=['POST'])
 def validarcontrasena(usuario):
   try:
     if request.method == 'POST':
@@ -104,7 +104,7 @@ def validarcontrasena(usuario):
     return redirect('/')
 
 # home page 
-@app.route('/home',methods=['POST','GET'])
+@application.route('/home',methods=['POST','GET'])
 def home():
   try:
     if 'FullName' in session:
@@ -118,7 +118,7 @@ def home():
     return redirect('/') 
 
 # packing form 
-@app.route('/Packing',methods=['POST','GET'])
+@application.route('/Packing',methods=['POST','GET'])
 def packing():
   try:
     if 'FullName' in session:
@@ -131,7 +131,7 @@ def packing():
     return redirect('/') 
 
 # receiving form 
-@app.route('/Receiving',methods=['POST','GET'])
+@application.route('/Receiving',methods=['POST','GET'])
 def recdeiving():
   try:
     if 'FullName' in session:
@@ -144,7 +144,7 @@ def recdeiving():
     return redirect('/') 
 
 # inventori form
-@app.route('/Inventory',methods=['POST','GET'])
+@application.route('/Inventory',methods=['POST','GET'])
 def inventory():
   try:
     if 'FullName' in session:
@@ -157,7 +157,7 @@ def inventory():
     return redirect('/') 
 
 # inventori form
-@app.route('/Damage',methods=['POST','GET'])
+@application.route('/Damage',methods=['POST','GET'])
 def damage():
   try:
     if 'FullName' in session:
@@ -170,7 +170,7 @@ def damage():
     return redirect('/') 
 
 # inventori form
-@app.route('/Product',methods=['POST','GET'])
+@application.route('/Product',methods=['POST','GET'])
 def product():
   try:
     if 'FullName' in session:
@@ -183,7 +183,7 @@ def product():
     return redirect('/') 
 
 # user register form 
-@app.route('/registro',methods=['POST','GET'])
+@application.route('/registro',methods=['POST','GET'])
 def registro():
   try:
     if session['Rango'] == 'Administrador' or session['Rango'] == 'Training' :
@@ -196,7 +196,7 @@ def registro():
     return redirect('/')
 
 # packing register 
-@app.route('/RegistrarPacking',methods=['POST','GET'])
+@application.route('/RegistrarPacking',methods=['POST','GET'])
 def registroP():
   try:
       if request.method == 'POST':
@@ -231,7 +231,7 @@ def registroP():
     return redirect('/Packing')
 
 # packin mov register
-@app.route('/RegistroMovPacking/<route>/<deliveryday>/<OG>',methods=['POST','GET'])
+@application.route('/RegistroMovPacking/<route>/<deliveryday>/<OG>',methods=['POST','GET'])
 def registroMovPacking(route,deliveryday,OG):
   try:
       if request.method == 'POST':
@@ -418,7 +418,7 @@ def registroMovPacking(route,deliveryday,OG):
     return redirect('/Packing')
 
 # receiving register 
-@app.route('/RegistrarReceiving',methods=['POST','GET'])
+@application.route('/RegistrarReceiving',methods=['POST','GET'])
 def registrarReceiving():
   try:
       if request.method == 'POST':
@@ -434,7 +434,7 @@ def registrarReceiving():
     return redirect('/Packing')
 
 # receiving mov register 
-@app.route('/RegistroMovReceiving/<receivingType>/<orderNumber>',methods=['POST','GET'])
+@application.route('/RegistroMovReceiving/<receivingType>/<orderNumber>',methods=['POST','GET'])
 def registroMovReceiving(receivingType,orderNumber):
   try:
       if request.method == 'POST':
@@ -560,7 +560,7 @@ def registroMovReceiving(receivingType,orderNumber):
     return redirect('/Receiving')
 
 # close receipt
-@app.route('/CerrarReceiving/<receivingType>/<orderNumber>',methods=['POST','GET'])
+@application.route('/CerrarReceiving/<receivingType>/<orderNumber>',methods=['POST','GET'])
 def cerrarReceiving(receivingType,orderNumber):
   try:
       link = connectBD()
@@ -579,7 +579,7 @@ def cerrarReceiving(receivingType,orderNumber):
     return redirect('/Receiving')
 
 # receiving register 
-@app.route('/RegistrarInventory',methods=['POST','GET'])
+@application.route('/RegistrarInventory',methods=['POST','GET'])
 def registrarInventory():
   # try:
       if request.method == 'POST':
@@ -691,7 +691,7 @@ def registrarInventory():
   #   return redirect('/Inventory')
 
 # Search Product
-@app.route('/FormSearch',methods=['POST','GET'])
+@application.route('/FormSearch',methods=['POST','GET'])
 def formsearch():  
   try:
       if request.method == 'POST':
@@ -714,7 +714,7 @@ def formsearch():
 
 
 # receiving mov register
-@app.route('/RegistrarProductoinv/<ean>/<cantidad>',methods=['POST','GET'])
+@application.route('/RegistrarProductoinv/<ean>/<cantidad>',methods=['POST','GET'])
 def registrarProductoinv(ean,cantidad):
   try:
       if request.method == 'POST':
@@ -837,7 +837,7 @@ def registrarProductoinv(ean,cantidad):
     return redirect('/Inventory')
 
 # receiving mov register
-@app.route('/RegistrarProducto/<ean>',methods=['POST','GET'])
+@application.route('/RegistrarProducto/<ean>',methods=['POST','GET'])
 def registrarProducto(ean):
   # try:
       if request.method == 'POST':
@@ -868,7 +868,7 @@ def registrarProducto(ean):
   #   return redirect('/Product')
 
 # Search Product
-@app.route('/SearchProductinv/<ean>/<cantidad>',methods=['POST','GET'])
+@application.route('/SearchProductinv/<ean>/<cantidad>',methods=['POST','GET'])
 def searchProductinv(ean,cantidad):
   try:
       if request.method == 'POST':
@@ -887,7 +887,7 @@ def searchProductinv(ean,cantidad):
     return redirect('/Inventory')
 
 # Search Product
-@app.route('/SearchProduct/<ean>',methods=['POST','GET'])
+@application.route('/SearchProduct/<ean>',methods=['POST','GET'])
 def searchProduct(ean):  
   try:
       if request.method == 'POST':
@@ -906,7 +906,7 @@ def searchProduct(ean):
     return redirect('/Inventory')
 
 # receiving register 
-@app.route('/RegistrarDamage',methods=['POST','GET'])
+@application.route('/RegistrarDamage',methods=['POST','GET'])
 def registrarDamage():
   # try:
       if request.method == 'POST':
@@ -1022,7 +1022,7 @@ def registrarDamage():
   #   return redirect('/Damage')
 
 # close receipt
-@app.route('/CerrarDamage',methods=['POST','GET'])
+@application.route('/CerrarDamage',methods=['POST','GET'])
 def cerrarDamage():
   try:
       link = connectBD()
@@ -1041,7 +1041,7 @@ def cerrarDamage():
     return redirect('/home')
 
 # close receipt
-@app.route('/CerrarInventory',methods=['POST','GET'])
+@application.route('/CerrarInventory',methods=['POST','GET'])
 def cerrarInventory():
   try:
       receivingType="Inventory"
@@ -1072,7 +1072,7 @@ def cerrarInventory():
     return redirect('/home')
 
 # user register
-@app.route('/registrar',methods=['POST'])
+@application.route('/registrar',methods=['POST'])
 def registrar():
   try:
       if request.method == 'POST':
@@ -1117,7 +1117,7 @@ def registrar():
     return render_template('registro.html',Datos =session)
 
 # cam scan 
-@app.route('/Scan',methods=['POST'])
+@application.route('/Scan',methods=['POST'])
 def registro_s_s():
   try:
       if request.method == 'POST':
@@ -1129,7 +1129,7 @@ def registro_s_s():
     return render_template('form/receiving.html',Datos = session)
 
 # close session
-@app.route('/logout')
+@application.route('/logout')
 def Cerrar_session():
   try:
     session.clear()
@@ -1139,7 +1139,7 @@ def Cerrar_session():
     return redirect('/')
 
 # receiving report 
-@app.route('/Reporte_receiving/<rowi>',methods=['POST','GET'])
+@application.route('/Reporte_receiving/<rowi>',methods=['POST','GET'])
 def reporte_receiving(rowi):
   try:
       if request.method == 'POST':
@@ -1567,7 +1567,7 @@ def reporte_receiving(rowi):
     return render_template('index.html')
 
 # orders report 
-@app.route('/Reporte_orders/<rowi>',methods=['POST','GET'])
+@application.route('/Reporte_orders/<rowi>',methods=['POST','GET'])
 def reporte_orders(rowi):
   try:
       if request.method == 'POST':
@@ -1929,7 +1929,7 @@ def reporte_orders(rowi):
     return render_template('index.html')#
 
 # movements report 
-@app.route('/Reporte_movements/<rowi>',methods=['POST','GET'])
+@application.route('/Reporte_movements/<rowi>',methods=['POST','GET'])
 def reporte_movements(rowi):
   try:
       if request.method == 'POST':
@@ -2291,7 +2291,7 @@ def reporte_movements(rowi):
     return render_template('index.html')
 
 # receiving  dowload report
-@app.route('/csvreceiving',methods=['POST','GET'])
+@application.route('/csvreceiving',methods=['POST','GET'])
 def crear_csvreceiving():
   try:
     site=session['SiteName']
@@ -2390,7 +2390,7 @@ def crear_csvreceiving():
     flash(str(error))
 
 # orders  dowload report
-@app.route('/csvorders',methods=['POST','GET'])
+@application.route('/csvorders',methods=['POST','GET'])
 def crear_csvorders():
   try:
     site=session['SiteName']
@@ -2497,7 +2497,7 @@ def crear_csvorders():
     flash(str(error))
 
 # movements  dowload report
-@app.route('/csvmovements',methods=['POST','GET'])
+@application.route('/csvmovements',methods=['POST','GET'])
 def crear_ccsvmovements():
   try:
     site=session['SiteName']
@@ -2595,7 +2595,7 @@ def crear_ccsvmovements():
     flash(str(error))
 
 # files form 
-@app.route('/files',methods=['POST','GET'])
+@application.route('/files',methods=['POST','GET'])
 def Files_():
   try:
     if 'FullName' in session:
@@ -2606,7 +2606,7 @@ def Files_():
     flash(str(error))
 
 # data file register 
-@app.route('/CargarDatos',methods=['POST','GET'])
+@application.route('/CargarDatos',methods=['POST','GET'])
 def uploadFiles():
   # try:
     if 'FullName' in session:
@@ -2703,7 +2703,7 @@ def uploadFiles():
   #   return redirect('/files')
 
 # cam scan fuction
-@app.route('/scanercam',methods=['POST','GET'])
+@application.route('/scanercam',methods=['POST','GET'])
 def scancam():
   cap = cv2.VideoCapture(0)
   cap.set(3,640)
@@ -2723,4 +2723,4 @@ def scancam():
 
 # fuction main   
 if __name__=='__main__':
-    app.run(port = 3000, debug =True)
+    application.run(port = 3000, debug =True)
