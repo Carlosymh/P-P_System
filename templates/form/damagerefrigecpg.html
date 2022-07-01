@@ -8,13 +8,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image" href="/static/img/Muni.icon.png">  
     <link rel="stylesheet" href="{{url_for('static', filename='css/nav.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='css/formscanreceiving.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/forminventory.css')}}">
     <link href="//db.onlinewebfonts.com/c/69f1400361a215519d385199118a34aa?family=Harabara" rel="stylesheet" type="text/css"/>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <script src="https://kit.fontawesome.com/206b5ce088.js" crossorigin="anonymous"></script>
     <link href="https://fonts.googleapis.com/css2?family=Khula:wght@800&display=swap" rel="stylesheet">
-    <title>Packing</title>
+    <script type='text/javascript' src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jquery.js"></script>
+    <title>Merma R&F</title>
 </head>
 <body>
     {% with messages = get_flashed_messages() %}
@@ -30,44 +32,49 @@
     {% block body%}
     <div class="container-formscan">
         <section class="form-register">
-            <form id="contact-form" name="contact-form" class="contact-form" method="post" action="/RegistroMovReceiving/{{ReceivingType}}/{{OrderNumber}}">
+            <form id="contact-form" name="contact-form" class="contact-form" method="post" action="/RegistrarDamage/{{type}}/PZ">
                 <h2 class="titulo2"> Escanea un ean</h2>
-                    {%if OrderNumber != "No aplica" %}
-                    <h2> {{ReceivingType}}</h2>
-                    <h2> O.C : {{OrderNumber}}</h2>
-                    {%else%}
-                    <h2>{{ReceivingType}}</h2>
-                    {%endif%}
                     <label for="cantidad"> Cantidad:
-                        <input name="cantidad" type="number"  value="1"  required>
+                        <input name="cantidad" id="quantity" type="number"  value="1"  required>
                     </label>
+                    <label for="Motivo">Motivo:</label>
+                    <select name="Motivo" >
+                        <option value="Fecha Vencimiento">Fecha Vencimiento</option>
+                        <option value="Producto Dañado/Averiado">Producto Dañado/Averiado</option>
+                        <option value="Cadena Frío/Perdida de Vacío">Cadena Frío/Perdida de Vacío</option>
+                        <option value="Extraccion">Extraccion</option>
+                        <option value="Calidad">Calidad</option>
+                        <option value="Daño Mecánico">Daño Mecánico</option>
+                        <option value="Devolucion">Devolucion</option>
+                        <option value="Maduración">Maduración</option>
+                    </select>
                 <label for="ean"> EAN:
-                    <input name="ean" type="text"  autofocus required>
+                    <input name="ean" type="text"  autofocus >
                 </label>
                     <input class="BTN" type="submit" value="ENVIAR">
                 
             </form>
 
-            <a href="/CerrarReceiving/{{ReceivingType}}/{{OrderNumber}}" class="cerrar_btn">Cerrar</a>
+            <a href="/CerrarDamage" class="cerrar_btn">Cerrar</a>
 
         </section>
         <section class="table">
             <table>
                 <thead>
                     <tr>
-                        <td>Type</td>
                         <td>Ean Muni</td>
                         <td>Descripción</td>
                         <td>Cantidad</td>
+                        <td>Motivo</td>
                     </tr>
                 </thead>
                 <tbody>
                   {% for row in data %}
                   <tr>
+                      <td>{{row[0]}}</td>
                       <td>{{row[1]}}</td>
                       <td>{{row[2]}}</td>
                       <td>{{row[3]}}</td>
-                      <td>{{row[4]}}</td>
                   </tr>
                   {%endfor%}
                 </tbody>

@@ -35,13 +35,13 @@
     <div class="filtros">
         <form action="/Reporte_receiving/0" method="post" class="form_filtros">
             <select name="filtro">
-                <option value="PurchaseOrder">Purchase Order</option>
+                <option value="PurchaseOrder">Orden de compra</option>
                 <option value="Type">Type</option>
                 <option value="Ean">Ean</option>
                 <option value="EanMuni">Ean Muni</option>
-                <option value="Description">Description</option>
-                <option value="Responsible">Responsible</option>
-                <option value="Status">Status</option>
+                <option value="Description">Descripción</option>
+                <option value="Responsible">Responsable</option>
+                <option value="Status">Estatus</option>
             </select>
             <input autocomplete="off" type="text" name="valor">
             <label for="datefilter">Fecha: </label>
@@ -56,16 +56,16 @@
             <table>
                 <thead >
                     <tr class="head">
-                        <th> Purchase Order </th>
+                        <th> Orden de compra </th>
                         <th> Type </th>
                         <th> Ean</th>
                         <th> Ean Muni </th>
-                        <th> Conversion Unit </th>
-                        <th> Quantity </th>
-                        <th> Description </th>
-                        <th> Responsible </th>
-                        <th> Status </th>
-                        <th> DateTime </th>
+                        <th> Unidad de conversion </th>
+                        <th> Cantidad </th>
+                        <th> Descripción </th>
+                        <th> Responsable </th>
+                        <th> Estatus </th>
+                        <th> Fecha y Hora  </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -84,7 +84,7 @@
                     </tr>
                     {%endfor%}
                     <tr class="Pag">
-                        <td colspan="10" class="Pag">
+                        <td colspan="11" class="Pag">
                             {%set row= Datos['rowi_receiving'] |int%}
                             {%if row==0%}
                             <a href="/Reporte_receiving/0" class="after">

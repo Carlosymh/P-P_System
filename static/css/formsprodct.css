@@ -22,7 +22,7 @@ body::-webkit-scrollbar {
 }
 .container-formscan .form-register form{
     width: 80%;
-    height: 340px;
+    height: calc(100%+20px);
     margin: 60px auto auto auto ;
     background: #fff;
     box-shadow: 0 0 10px #aaa;
@@ -52,10 +52,10 @@ table{
     border-radius:5px;
     border-collapse: collapse;
 }
-table tr{
-
-    padding: 5px 0;
-    border-bottom:1px solid#ddd;
+tbody tr td {
+    padding: 10px 0;
+    margin-bottom: 5px;
+    border-bottom:1px solid #ddd;
 }
 
 .titulo{
@@ -118,4 +118,14 @@ thead,
     color: #fff;
     border: 2px solid #01d4c7;
 
+}
+
+.butonselect{
+    margin: auto;
+    padding: 2px;
+    background: #04f892;
+    color: #fff;
+    border-radius: 5px;
+    font-size: 8px;
+    border: 1px solid #555;
 }

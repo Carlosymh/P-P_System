@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image" href="/static/img/Muni.icon.png">  
+    <link rel="icon" type="image" href="/static/img/Muni.icon.png">   
     <link rel="stylesheet" href="{{url_for('static', filename='css/reportes.css')}}">
     <link href="//db.onlinewebfonts.com/c/69f1400361a215519d385199118a34aa?family=Harabara" rel="stylesheet" type="text/css"/>
     <link rel="stylesheet" href="{{url_for('static', filename='css/nav.css')}}">
@@ -18,7 +18,7 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
     <script src="https://kit.fontawesome.com/206b5ce088.js" crossorigin="anonymous"></script>
-    <title>Reporte Orders</title>
+    <title>Reporte Realert</title>
 </head>
 <body>
     {% with messages = get_flashed_messages() %}
@@ -33,55 +33,38 @@
     {% endblock %}
     {% block body%}
     <div class="filtros">
-        <form action="/Reporte_orders/0" method="post" class="form_filtros">
+        <form action="/ReporteInventori/0" method="post" class="form_filtros">
             <select name="filtro">
-                <option value="RouteName">Route Name</option>
-                <option value="FUName">	FU Name</option>
-                <option value="Service_Zone">Service Zone</option>
-                <option value="FK_order">FK Order</option>
-                <option value="Packer">Packer</option>
-                <option value="FuOrder">FuOrder</option>
-                <option value="Ean">Ean</option>
-                <option value="OperationGroup">Operation Group</option>
-                <option value="ProductName">Product Name</option>
-                <option value="Type">Type</option>
-                <option value="Vendedor">Vendedor</option>
-                <option value="CLid">CLid</option>
-                <option value="Stop">Stop</option>
-                <option value="Status">Status</option>
-                <option value="responsable">Responsable</option>
+                <option value="CB_Captura">CB_Captura</option>
+                <option value="EAN_MUNI">EAN MUNI</option>
+                <option value="Producto">Producto</option>
+                <option value="Status">Estatus</option>
+                <option value="inventoryUser">Ultimo Usuario</option>
+                <option value="Process">Proceso</option>
+                <option value="Responsible">Responsable</option>
             </select>
             <input autocomplete="off" type="text" name="valor">
-            <label   for="datefilter">Fecha: </label>
+            <label for="datefilter">Fecha: </label>
             <input autocomplete="off" type="text" name="datefilter" value="" />
             </label>
             <input type="submit" value="Buscar">
         </form>
-        <a href="/csvorders" target="_blank" class="download_csv"><i class="fas fa-file-download"></i>  Descargar</a>
+        <a href="/csvinventory" target="_blank" class="download_csv"><i class="fas fa-file-download"></i>  Descargar</a>
     </div>
         <div class="fondo">
         <section>
             <table>
                 <thead >
                     <tr class="head">
-                        <th> ROUTE NAME </th>
-                        <th> FU NAME</th>
-                        <th> SERVICE ZONE</th>
-                        <th> FK ORDER</th>
-                        <th> PACKER </th>
-                        <th> FU ORDER </th>
-                        <th> EAN </th>
-                        <th> OPERATION GROUP </th>
-                        <th> PRODUCT NAME </th>
-                        <th> TYPE </th>
-                        <th> DELIVERY DAY</th>
-                        <th> O.Q </th>
-                        <th> VENDEDOR </th>
-                        <th> CL ID </th>
-                        <th> STOP</th>
-                        <th> C.Q</th>
-                        <th> P.Q</th>
-                        <th> STATUS </th>
+                        <th> CB Captura </th>
+                        <th> EAN MUNI </th>
+                        <th> Producto </th>
+                        <th> Cantidad Anterior </th>
+                        <th> Cantidad Actual </th>
+                        <th> Unidad de Medida </th>
+                        <th> Status </th>
+                        <th> Ultimo Usuario </th>
+                        <th> Fecha de Actualizacion </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -96,50 +79,41 @@
                         <td>{{Info.7}}</td>
                         <td>{{Info.8}}</td>
                         <td>{{Info.9}}</td>
-                        <td>{{Info.10}}</td>
-                        <td>{{Info.11}}</td>
-                        <td>{{Info.12}}</td>
-                        <td>{{Info.13}}</td>
-                        <td>{{Info.14}}</td>
-                        <td>{{Info.15}}</td>
-                        <td>{{Info.16}}</td>
-                        <td>{{Info.17}}</td>
-                        <td>{{Info.18}}</td>
                     </tr>
                     {%endfor%}
                     <tr class="Pag">
-                        <td colspan="18" class="Pag">
-                            {%set row= Datos['rowi_orders'] |int%}
+                        <td colspan="10" class="Pag">
+                            {%set row= Datos['rowi_inventori'] |int%}
                             {%if row==0%}
-                            <a href="/Reporte_orders/0" class="after">
+                            <a href="/ReporteInventori/0" class="after">
                                 <i class="fas fa-angle-double-left">
                                 </i>
                             </a>
                             {%else%}
                             {%set rowMenos=row-50 | int%}
-                            <a href="/Reporte_orders/{{rowMenos}}" class="after">
+                            <a href="/ReporteInventori/{{rowMenos}}" class="after">
                                 <i class="fas fa-angle-double-left">
                                 </i>
                             </a>
                             {%endif%}
                             {%set rowMas=row+50 | int%}
-                            <a href="/Reporte_orders/0" class="in"> 1 </a>
-                            <a href="/Reporte_orders/50" class="in"> 2 </a>
-                            <a href="/Reporte_orders/100" class="in"> 3 </a>
-                            <a href="/Reporte_orders/150" class="in"> 4 </a>
-                            <a href="/Reporte_orders/200" class="in"> 5 </a>
-                            <a href="/Reporte_orders/250" class="in"> 6 </a>
-                            <a href="/Reporte_orders/300" class="in"> 7 </a>
-                            <a href="/Reporte_orders/350" class="in"> 8 </a>
-                            <a href="/Reporte_orders/400" class="in"> 9 </a>
-                            <a href="/Reporte_orders/450" class="in"> 10 </a>
+                            <a href="/ReporteInventori/0" class="in"> 1 </a>
+                            <a href="/ReporteInventori/50" class="in"> 2 </a>
+                            <a href="/ReporteInventori/100" class="in"> 3 </a>
+                            <a href="/ReporteInventori/150" class="in"> 4 </a>
+                            <a href="/ReporteInventori/200" class="in"> 5 </a>
+                            <a href="/ReporteInventori/250" class="in"> 6 </a>
+                            <a href="/ReporteInventori/300" class="in"> 7 </a>
+                            <a href="/ReporteInventori/350" class="in"> 8 </a>
+                            <a href="/ReporteInventori/400" class="in"> 9 </a>
+                            <a href="/ReporteInventori/450" class="in"> 10 </a>
                             {%if row >= 450 %}
                             {% set numpag=(row/50)+1 |int%}
                             <span class="in">    </span>
-                            <a href="/Reporte_orders/{{(numpag*50) |int}}" class="in"> {{numpag | int}} </a>
-                            <a href="/Reporte_orders/{{((numpag+1)*50) |int}}" class="in"> {{(numpag+1) |int}} </a>
+                            <a href="/ReporteInventori/{{(numpag*50) |int}}" class="in"> {{numpag | int}} </a>
+                            <a href="/ReporteInventori/{{((numpag+1)*50) |int}}" class="in"> {{(numpag+1) |int}} </a>
                             {%endif%}
-                            <a href="/Reporte_orders/{{rowMas}}" class="before">
+                            <a href="/ReporteInventori/{{rowMas}}" class="before">
                                 <i class="fas fa-angle-double-right">
                                 </i>
                             </a>

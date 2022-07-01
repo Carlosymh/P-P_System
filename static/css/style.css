@@ -39,7 +39,7 @@ section h1{
     margin-top: -80px;
     background: #fff;
     width: 350px;
-    height: 250px;
+    height: calc(100%+30px);
     display:flexbox;
     box-shadow: 0 0 10px  #888;
     border-top-right-radius: 5px;
@@ -54,7 +54,7 @@ section h1{
     margin-top: -15vh;
     background: #fff;
     width: 350px;
-    height: 300px;
+    height: calc(100%+30px);
     display:flexbox;
     box-shadow: 0 0 10px  #888;
     border-radius: 5px;

@@ -14,7 +14,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Khula:wght@800&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/206b5ce088.js" crossorigin="anonymous"></script>
-    <title>Search Product</title>
+    <title>Buscar Producto</title>
 </head>
 <body>
     {% with messages = get_flashed_messages() %}
@@ -31,7 +31,12 @@
         <div class="fondo"></div>
         <section>
             <!-- enctype="multipart/form-data" -->
-            {% if cantidad %}
+            {% if ReceivingType or OrderNumber %}
+            <form class="form_file" action="/SearchProductrec/{{ean}}/{{cantidad}}/{{ReceivingType}}/{{OrderNumber}} " method="POST" " >
+                <h2> Buscar Producto </h2>
+                <span>Ean: '{{ean}}'  no registrado en catalogo</span>
+                <span>Cantidad:  '{{cantidad}}'  </span>
+            {% elif cantidad %}
             <form class="form_file" action="/SearchProductinv/{{ean}}/{{cantidad}} " method="POST" " >
                 <h2> Buscar Producto </h2>
                 <span>Ean: '{{ean}}'  no registrado en catalogo</span>
@@ -40,7 +45,7 @@
             <form class="form_file" action="/SearchProduct/{{ean}} " method="POST" " >
                 <h2> Buscar Producto </h2>
                 <span>Ean: '{{ean}}'  no registrado en catalogo</span>
-                {%endif%}
+            {%endif%}
                 <span>Busca si existe un producto parecido</span>
                 <span>En el catalogo</span>
                 <label for="desc">Descripción:</label>
