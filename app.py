@@ -129,19 +129,6 @@ def home():
     flash(str(error))
     return redirect('/') 
 
-# # packing form 
-# @app.route('/Packing',methods=['POST','GET'])
-# def packing():
-  # try:
-  #   if 'FullName' in session:
-  #     return render_template('form/packing.html',Datos = session)
-  #   else:
-  #     flash("Inicia Sesion")
-  #     return redirect('/')
-  # except Exception as error:
-  #   flash(str(error))
-  #   return redirect('/') 
-
 # receiving form 
 @app.route('/Receiving',methods=['POST','GET'])
 def recdeiving():
@@ -213,235 +200,6 @@ def registro():
   except Exception as error:
     flash(str(error))
     return redirect('/')
-
-# # packing register 
-# @app.route('/RegistrarPacking',methods=['POST','GET'])
-# def registroP():
-#   try:
-#       if request.method == 'POST':
-#         deliveryday =  request.form['deliveryday']
-#         clid =  request.form['route']
-#         og =  request.form['OG']
-#         Site =  session['SiteName']
-#         status="Finished"
-#         link = connectBD()
-#         db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-#         cur= db_connection.cursor()
-#         # Read a single record
-#         sql = "SELECT RouteName, FuOrder, Ean, ProductName, OriginalQuantity, CurrentQuantity, Status FROM `orders` WHERE CLid=%s AND DeliveryDay=%s AND NOT Status =%s AND OperationGroup=%s AND Site=%s "
-#         cur.execute(sql, (clid,deliveryday,status,og,Site, ))
-#         data = cur.fetchall()
-#         cur.close()
-#         link = connectBD()
-#         db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-#         cur= db_connection.cursor()
-#         # Read a single record
-#         sql = "SELECT RouteName, FuOrder, Ean, ProductName, OriginalQuantity, CurrentQuantity, Status FROM `orders` WHERE CLid=%s AND DeliveryDay=%s AND  Status =%s AND OperationGroup=%s AND Site=%s "
-#         cur.execute(sql, (clid,deliveryday,status,og,Site, ))
-#         data3 = cur.fetchall()
-#         cur.close()
-#         if data :
-#           return render_template('actualizacion/Scan.html',Datos =session, data=data,dataf=data3,deliveryday=deliveryday,clid=clid,OG=og)
-#         else:
-#           flash("No hay Ordenes Pendientes es esta ruta")
-#           return redirect('/Packing')
-#       else:
-#         redirect('/Packing')
-#   except Exception as error: 
-#     flash(str(error))
-#     return redirect('/Packing')
-
-# # packin mov register
-# @app.route('/RegistroMovPacking/<clid>/<deliveryday>/<OG>',methods=['POST','GET'])
-# def registroMovPacking(clid,deliveryday,OG):
-#   try:
-#       if request.method == 'POST':
-#         ean =  request.form['ean'].strip()
-#         status="Finished"
-#         Site=session['SiteName']
-#         if session['SiteName']=='CDMX01':
-#           timeZ = pytz.timezone('America/Mexico_City')
-#         elif session['SiteName']=='MEDELLIN01':
-#           timeZ = pytz.timezone('America/Bogota')
-#         link = connectBD()
-#         db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-#         cur= db_connection.cursor()
-#         # Read a single record
-#         sql = "SELECT * FROM product WHERE CB_Captura =%s  limit 1  "
-#         cur.execute(sql, (ean))
-#         product = cur.fetchone()
-#         cur.close()
-#         if product:
-#             link = connectBD()
-#             db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-#             cur= db_connection.cursor()
-#             # Read a single record
-#             sql = "SELECT * FROM orders WHERE Ean=%s AND  CLid=%s AND DeliveryDay=%s AND NOT Status=%s AND OperationGroup=%s AND Site=%s  limit 1"
-#             cur.execute(sql, (product[2],clid,deliveryday,status,OG,Site))
-#             data = cur.fetchone()
-#             cur.close()
-#             if data :
-#               Packer=session['UserName']
-#               OriginalQuantity=data[12]
-#               CurrentQuantity	=int(data[16])+int(product[4])
-#               PendingQuantity=int(data[17])-int(product[4])
-#               if OriginalQuantity==CurrentQuantity:
-#                 estatus= 'Finished'
-#               elif CurrentQuantity>0 and PendingQuantity> 0:
-#                 estatus= 'In Process'
-#               else:
-#                 estatus= 'Pendding'
-#               ID_Order =data[0]
-#               link = connectBD()
-#               db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-#               cur= db_connection.cursor()
-#               # Create a new record
-#               sql = "UPDATE orders SET Packer = %s, CurrentQuantity = %s,PendingQuantity = %s, Status = %s WHERE ID_Order  = %s"
-#               cur.execute(sql,(Packer,CurrentQuantity,PendingQuantity,estatus,ID_Order,))
-#               # connection is not autocommit by default. So you must commit to save
-#               # your changes.
-#               db_connection.commit()
-#               cur.close()
-#               link = connectBD()
-#               db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-#               cur= db_connection.cursor()
-#               # Create a new record
-#               sql = "INSERT INTO movements (RouteName,FuOrder,CLid,Ean,Description,Quantity,Process,Responsible,Site,DateTime) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-#               cur.execute(sql,(data[1],data[6],clid,product[2],data[9],1,'Packing',session['UserName'],session['SiteName'],datetime.now(timeZ)))
-#               # connection is not autocommit by default. So you must commit to save
-#               # your changes.
-#               db_connection.commit()
-#               cur.close()
-#               link = connectBD()
-#               db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-#               cur= db_connection.cursor()
-#               # Read a single record
-#               sql = "SELECT RouteName, FuOrder, Ean, ProductName, OriginalQuantity, CurrentQuantity, Status FROM orders WHERE  CLid=%s AND DeliveryDay=%s AND NOT Status =%s AND OperationGroup=%s AND Site=%s  "
-#               cur.execute(sql, (clid,deliveryday,status, OG, Site))
-#               data2 = cur.fetchall()
-#               cur.close()
-#               link = connectBD()
-#               db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-#               cur= db_connection.cursor()
-#               # Read a single record
-#               sql = "SELECT RouteName, FuOrder, Ean, ProductName, OriginalQuantity, CurrentQuantity, Status FROM orders WHERE  CLid=%s AND DeliveryDay=%s AND Status =%s AND OperationGroup=%s AND Site=%s  "
-#               cur.execute(sql, (clid,deliveryday,status, OG, Site))
-#               data3 = cur.fetchall()
-#               cur.close()
-#               if data2:
-#                 return render_template('actualizacion/Scan.html',Datos =session, data=data2,clid=clid,deliveryday=deliveryday,OG=OG)
-#               else:
-#                 return render_template('actualizacion/Scan.html',Datos =session, dataf=data3,clid=clid,deliveryday=deliveryday,OG=OG)
-#             else:
-#               flash("Codigo Ean no Encontrado en esta Ruta")
-              
-#               link = connectBD()
-#               db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-#               cur= db_connection.cursor()
-#               # Read a single record
-#               sql = "SELECT RouteName, FuOrder, Ean, ProductName, OriginalQuantity, CurrentQuantity, Status FROM orders WHERE  CLid=%s AND DeliveryDay=%s AND NOT Status =%s AND OperationGroup=%s AND Site=%s "
-#               cur.execute(sql, (clid,deliveryday,status, OG, Site))
-#               data2 = cur.fetchall()
-#               cur.close()
-#               link = connectBD()
-#               db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-#               cur= db_connection.cursor()
-#               # Read a single record
-#               sql = "SELECT RouteName, FuOrder, Ean, ProductName, OriginalQuantity, CurrentQuantity, Status FROM orders WHERE  CLid=%s AND DeliveryDay=%s AND Status =%s AND OperationGroup=%s AND Site=%s "
-#               cur.execute(sql, (clid,deliveryday,status, OG, Site))
-#               data3 = cur.fetchall()
-#               cur.close()
-#               return render_template('actualizacion/Scan.html',Datos =session, data=data2, dataf=data3,clid=clid,deliveryday=deliveryday,OG=OG)
-#         else:
-#             link = connectBD()
-#             db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-#             cur= db_connection.cursor()
-#             # Read a single record
-#             sql = "SELECT * FROM orders WHERE Ean=%s AND  CLid=%s AND DeliveryDay=%s AND NOT Status=%s AND OperationGroup=%s AND Site=%s  limit 1"
-#             cur.execute(sql, (ean,clid,deliveryday,status,OG,Site))
-#             data = cur.fetchone()
-#             cur.close
-#             if data :
-#               Packer=session['UserName']
-#               OriginalQuantity=data[12]
-#               CurrentQuantity	=data[16]+1
-#               PendingQuantity=data[17]-1
-#               if OriginalQuantity==CurrentQuantity:
-#                 estatus= 'Finished'
-#               elif CurrentQuantity>0 and PendingQuantity> 0:
-#                 estatus= 'In Process'
-#               else:
-#                 estatus= 'Pendding'
-#               ID_Order =data[0]
-              
-#               link = connectBD()
-#               db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-#               cur= db_connection.cursor()
-#               # Create a new record
-#               sql = "UPDATE orders SET Packer = %s, CurrentQuantity = %s,PendingQuantity = %s, Status = %s WHERE ID_Order  = %s"
-#               cur.execute(sql,(Packer,CurrentQuantity,PendingQuantity,estatus,ID_Order,))
-#               # connection is not autocommit by default. So you must commit to save
-#               # your changes.
-#               db_connection.commit()
-#               cur.close()
-              
-#               link = connectBD()
-#               db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-#               cur= db_connection.cursor()
-#               # Create a new record
-#               sql = "INSERT INTO movements (RouteName,FuOrder,CLid,Ean,Description,Quantity,Process,Responsible,Site,DateTime) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-#               cur.execute(sql,(data[1],data[6],clid,ean,data[9],1,'Packing',session['UserName'],session['SiteName'],datetime.now(timeZ)))
-#               # connection is not autocommit by default. So you must commit to save
-#               # your changes.
-#               db_connection.commit()
-#               cur.close()
-              
-#               link = connectBD()
-#               db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-#               cur= db_connection.cursor()
-#               # Read a single record
-#               sql = "SELECT RouteName, FuOrder, Ean, ProductName, OriginalQuantity, CurrentQuantity, Status FROM orders WHERE  CLid=%s AND DeliveryDay=%s AND NOT Status =%s AND OperationGroup=%s AND Site=%s  "
-#               cur.execute(sql, (clid,deliveryday,status, OG, Site))
-#               data2 = cur.fetchall()
-#               cur.close()
-              
-#               link = connectBD()
-#               db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-#               cur= db_connection.cursor()
-#               # Read a single record
-#               sql = "SELECT RouteName, FuOrder, Ean, ProductName, OriginalQuantity, CurrentQuantity, Status FROM orders WHERE  CLid=%s AND DeliveryDay=%s AND Status =%s AND OperationGroup=%s AND Site=%s  "
-#               cur.execute(sql, (clid,deliveryday,status, OG, Site))
-#               data3 = cur.fetchall()
-#               cur.close()
-#               if data2:
-#                 return render_template('actualizacion/Scan.html',Datos =session, data=data2, dataf=data3,clid=clid,deliveryday=deliveryday,OG=OG)
-#               else:
-#                 return render_template('actualizacion/Scan.html',Datos =session, dataf=data3,clid=clid,deliveryday=deliveryday,OG=OG)
-#             else:
-#               flash("Codigo Ean no Encontrado en esta Ruta")
-              
-#               link = connectBD()
-#               db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-#               cur= db_connection.cursor()
-#               # Read a single record
-#               sql = "SELECT RouteName, FuOrder, Ean, ProductName, OriginalQuantity, CurrentQuantity, Status FROM orders WHERE  CLid=%s AND DeliveryDay=%s AND NOT Status =%s AND OperationGroup=%s AND Site=%s "
-#               cur.execute(sql, (clid,deliveryday,status, OG, Site))
-#               data2 = cur.fetchall()
-#               cur.close()
-              
-#               link = connectBD()
-#               db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-#               cur= db_connection.cursor()
-#               # Read a single record
-#               sql = "SELECT RouteName, FuOrder, Ean, ProductName, OriginalQuantity, CurrentQuantity, Status FROM orders WHERE  CLid=%s AND DeliveryDay=%s AND Status =%s AND OperationGroup=%s AND Site=%s "
-#               cur.execute(sql, (clid,deliveryday,status, OG, Site))
-#               data3 = cur.fetchall()
-#               cur.close()
-#               return render_template('actualizacion/Scan.html',Datos =session, data=data2,dataf=data3,clid=clid,deliveryday=deliveryday,OG=OG)
-
-#   except Exception as error:
-#     flash(str(error))
-#     return redirect('/Packing')
 
 # receiving register 
 @app.route('/RegistrarReceiving',methods=['POST','GET'])
@@ -612,11 +370,31 @@ def cerrarReceiving(receivingType,orderNumber):
   except Exception as error:
     flash(str(error))
     return redirect('/Receiving')
+ 
+# Actualizar Cantidad 
+@app.route('/Actualizar/<id>/<ReceivingType>/<OrderNumber>',methods=['GET'])
+def actualizar(id,ReceivingType,OrderNumber):
+  try:
+    link = connectBD()
+    db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+    cur= db_connection.cursor()
+    # Read a single record  
+    sql = "SELECT * FROM receivingtable WHERE id_receivingtable=%s limit 1"
+    cur.execute(sql, (id))
+    Data = cur.fetchone()
+    cur.close()
+  except:
+    redirect('/')
+
+# Eliminar Registro
+@app.route('/Eliminar/<id>/<ReceivingType>/<OrderNumber>',methods=['GET'])
+def eliminar(id,ReceivingType,OrderNumber):
+  pass
 
 # receiving register 
 @app.route('/RegistrarInventory',methods=['POST','GET'])
 def registrarInventory():
-  # try:
+  try:
       if request.method == 'POST':
         receivingType="Inventory"
         orderNumber="No aplica"
@@ -721,9 +499,9 @@ def registrarInventory():
             return render_template('form/inventory.html',Datos =session, data=data2)
         else:
           return render_template('actualizacion/Searchproduct.html',Datos =session,ean=ean,cantidad=cantidad)
-  # except Exception as error: 
-  #   flash(str(error))
-  #   return redirect('/Inventory')
+  except Exception as error: 
+    flash(str(error))
+    return redirect('/Inventory')
 
 # Search Product
 @app.route('/FormSearch',methods=['POST','GET'])
@@ -746,7 +524,6 @@ def formsearch():
           return render_template('actualizacion/Searchproduct.html',Datos =session,ean=ean)
   except:
     return redirect('/')
-
 
 # receiving mov register
 @app.route('/RegistrarProductorec/<ean>/<cantidad>/<ReceivingType>/<OrderNumber>',methods=['POST','GET'])
@@ -1536,18 +1313,6 @@ def registrar():
     flash("Registro Fallido")
     return render_template('registro.html',Datos =session)
 
-# # cam scan 
-# @app.route('/Scan',methods=['POST'])
-# def registro_s_s():
-#   try:
-#       if request.method == 'POST':
-#         DeliveryDate = request.form['DeliveryDate']
-#         Route = request.form['Route']
-#         return render_template('form/scan.html')
-#   except Exception as error: 
-#     flash(str(error))
-#     return render_template('form/receiving.html',Datos = session)
-
 # close session
 @app.route('/logout')
 def Cerrar_session():
@@ -2101,50 +1866,39 @@ def reporte_product(rowi):
           return render_template('reportes/t_product.html',Datos = session,Infos =data)         
   except Exception as error: 
     flash(str(error))
-    return render_template('index.html')#
+    return render_template('index.html')
 
 # movements report 
 @app.route('/ReporteInventori/<rowi>',methods=['POST','GET'])
-def reporte_inventori(rowi):
+def reporte_Inventori(rowi):
   try:
-      if request.method == 'POST':
-        if request.method == 'GET':
-          session['rowi_inventori']=rowi
+    if request.method == 'POST':
+      if request.method == 'GET':
+        session['rowi_inventori']=rowi
+        row1 = int(session['rowi_inventori'])
+        row2 = 50
+      else:
           row1 = int(session['rowi_inventori'])
-          row2 = 50
-        else:
-            row1 = int(session['rowi_inventori'])
-            row2 =50
-        if 'valor' in request.form:
-          if len(request.form['valor'])>0:
-            session['filtro_inventori']=request.form['filtro']
-            session['valor_inventori']=request.form['valor']
-            if 'datefilter' in request.form:
-              if len(request.form['datefilter'])>0:
-                daterangef=request.form['datefilter']
-                daterange=daterangef.replace("-", "' AND '")
-                session['datefilter_inventori']=daterange
-                link = connectBD()
-                db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-                cur= db_connection.cursor()
-                # Read a single record
-                sql = "SELECT * FROM inventory WHERE {} LIKE \'%{}%\' AND DATE(Fecha_de_Actualizacion) BETWEEN \'{}\' AND Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['filtro_inventori'],session['valor_inventori'],session['datefilter_inventori'],session['SiteName'],row1,row2)
-                cur.execute(sql)
-                data = cur.fetchall()
-                cur.close()
-                return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
-              else:
-                link = connectBD()
-                db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-                cur= db_connection.cursor()
-                # Read a single record
-                sql = "SELECT * FROM inventory WHERE {} LIKE \'%{}%\' AND Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['filtro_inventori'],session['valor_inventori'],session['SiteName'],row1,row2)
-                cur.execute(sql)
-                data = cur.fetchall()
-                cur.close()
-                return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
+          row2 =50
+      if 'valor' in request.form:
+        if len(request.form['valor'])>0:
+          session['filtro_inventori']=request.form['filtro']
+          session['valor_inventori']=request.form['valor']
+          if 'datefilter' in request.form:
+            if len(request.form['datefilter'])>0:
+              daterangef=request.form['datefilter']
+              daterange=daterangef.replace("-", "' AND '")
+              session['datefilter_inventori']=daterange
+              link = connectBD()
+              db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+              cur= db_connection.cursor()
+              # Read a single record
+              sql = "SELECT * FROM inventory WHERE {} LIKE \'%{}%\' AND DATE(Fecha_de_Actualizacion) BETWEEN \'{}\' AND Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['filtro_inventori'],session['valor_inventori'],session['datefilter_inventori'],session['SiteName'],row1,row2)
+              cur.execute(sql)
+              data = cur.fetchall()
+              cur.close()
+              return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
             else:
-              session.pop('datefilter')
               link = connectBD()
               db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
               cur= db_connection.cursor()
@@ -2155,82 +1909,24 @@ def reporte_inventori(rowi):
               cur.close()
               return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
           else:
-            if 'datefilter' in request.form:
-              if len(request.form['datefilter'])>0:
-                if 'valor_inventori' in session:
-                  if len(session['valor_inventori'])>0:
-                    daterangef=request.form['datefilter']
-                    daterange=daterangef.replace("-", "' AND '")
-                    session['datefilter_inventori']=daterange
-                    link = connectBD()
-                    db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-                    cur= db_connection.cursor()
-                    # Read a single record
-                    sql = "SELECT * FROM inventory WHERE {} LIKE \'%{}%\' AND  DATE(Fecha_de_Actualizacion) BETWEEN \'{}\' AND Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['filtro_inventori'],session['valor_inventori'],session['datefilter_inventori'],session['SiteName'],row1,row2)
-                    cur.execute(sql)
-                    data = cur.fetchall()
-                    cur.close()
-                    return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
-                  else:
-                    session.pop('filtro_inventori')
-                    session.pop('valor_inventori')
-                    link = connectBD()
-                    db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-                    cur= db_connection.cursor()
-                    # Read a single record
-                    sql = "SELECT * FROM inventory WHERE  DATE(Fecha_de_Actualizacion) BETWEEN \'{}\' AND Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['datefilter_inventori'],session['SiteName'],row1,row2)
-                    cur.execute(sql)
-                    data = cur.fetchall()
-                    cur.close()
-                    return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
-                else:
+            session.pop('datefilter')
+            link = connectBD()
+            db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+            cur= db_connection.cursor()
+            # Read a single record
+            sql = "SELECT * FROM inventory WHERE {} LIKE \'%{}%\' AND Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['filtro_inventori'],session['valor_inventori'],session['SiteName'],row1,row2)
+            cur.execute(sql)
+            data = cur.fetchall()
+            cur.close()
+            return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
+        else:
+          if 'datefilter' in request.form:
+            if len(request.form['datefilter'])>0:
+              if 'valor_inventori' in session:
+                if len(session['valor_inventori'])>0:
                   daterangef=request.form['datefilter']
                   daterange=daterangef.replace("-", "' AND '")
                   session['datefilter_inventori']=daterange
-                  link = connectBD()
-                  db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-                  cur= db_connection.cursor()
-                  # Read a single record
-                  sql = "SELECT * FROM inventory WHERE  DATE(Fecha_de_Actualizacion) BETWEEN \'{}\' AND Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['datefilter_inventori'],session['SiteName'],row1,row2)
-                  cur.execute(sql)
-                  data = cur.fetchall()
-                  cur.close()
-                  return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
-              else:
-                if 'valor_inventori' in session:
-                  session.pop('filtro_inventori')
-                  session.pop('valor_inventori')
-                if 'datefilter_inventori' in session:
-                  session.pop('datefilter_inventori')
-                link = connectBD()
-                db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-                cur= db_connection.cursor()
-                # Read a single record
-                sql = "SELECT * FROM inventory WHERE Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['SiteName'],row1,row2)
-                cur.execute(sql)
-                data = cur.fetchall()
-                cur.close()
-            else:
-              if 'valor_inventori' in session:
-                session.pop('filtro_inventori')
-                session.pop('valor_inventori')
-              if 'datefilter_inventori' in session:
-                  session.pop('datefilter_inventori')
-              link = connectBD()
-              db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-              cur= db_connection.cursor()
-              # Read a single record
-              sql = "SELECT * FROM inventory WHERE Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['SiteName'],row1,row2)
-              cur.execute(sql)
-              data = cur.fetchall()
-              cur.close()
-              return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
-
-        else:
-          if 'valor_inventori' in session:
-            if len(session['valor_inventori'])>0:
-              if 'datefilter_inventori' in session:
-                if len(session['datefilter_inventori'])>0:
                   link = connectBD()
                   db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
                   cur= db_connection.cursor()
@@ -2241,31 +1937,8 @@ def reporte_inventori(rowi):
                   cur.close()
                   return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
                 else:
-                  session.pop('datefilter_inventori')
-                  link = connectBD()
-                  db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-                  cur= db_connection.cursor()
-                  # Read a single record
-                  sql = "SELECT * FROM inventory WHERE {} LIKE \'%{}%\' AND Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['filtro_inventori'],session['valor_inventori'],session['SiteName'],row1,row2)
-                  cur.execute(sql)
-                  data = cur.fetchall()
-                  cur.close()
-                  return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
-              else:
-                link = connectBD()
-                db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-                cur= db_connection.cursor()
-                # Read a single record
-                sql = "SELECT * FROM inventory WHERE {} LIKE \'%{}%\' AND Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['filtro_inventori'],session['valor_inventori'],session['SiteName'],row1,row2)
-                cur.execute(sql)
-                data = cur.fetchall()
-                cur.close()
-                return render_template('reportes/t_inventori.html',Datos = session,Infos =data) 
-            else:
-              session.pop('filtro_inventori')
-              session.pop('valor_inventori')
-              if 'datefilter_inventori' in session:
-                if len(session['datefilter_inventori'])>0:
+                  session.pop('filtro_inventori')
+                  session.pop('valor_inventori')
                   link = connectBD()
                   db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
                   cur= db_connection.cursor()
@@ -2275,29 +1948,10 @@ def reporte_inventori(rowi):
                   data = cur.fetchall()
                   cur.close()
                   return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
-                else:
-                  link = connectBD()
-                  db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-                  cur= db_connection.cursor()
-                  # Read a single record
-                  sql = "SELECT * FROM inventory WHERE Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['SiteName'],row1,row2)
-                  cur.execute(sql)
-                  data = cur.fetchall()
-                  cur.close()
-                  return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
               else:
-                link = connectBD()
-                db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-                cur= db_connection.cursor()
-                # Read a single record
-                sql = "SELECT * FROM inventory WHERE Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['SiteName'],row1,row2)
-                cur.execute(sql)
-                data = cur.fetchall()
-                cur.close()
-                return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
-          else:
-            if 'datefilter_inventori' in session:
-              if len(session['datefilter_inventori'])>0:
+                daterangef=request.form['datefilter']
+                daterange=daterangef.replace("-", "' AND '")
+                session['datefilter_inventori']=daterange
                 link = connectBD()
                 db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
                 cur= db_connection.cursor()
@@ -2307,58 +1961,36 @@ def reporte_inventori(rowi):
                 data = cur.fetchall()
                 cur.close()
                 return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
-              else:
-                session.pop('datefilter_inventori')
-                link = connectBD()
-                db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-                cur= db_connection.cursor()
-                cur.execute('SELECT * FROM inventory WHERE Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}'.format(session['SiteName'],row1,row2))
-                data = cur.fetchall()
-                cur.close()
-                return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
             else:
-              if 'datefilter' in request.form:
-                if len(request.form['datefilter'])>0:
-                  daterangef=request.form['datefilter']
-                  daterange=daterangef.replace("-", "' AND '")
-                  session['datefilter_inventori']=daterange
-                  link = connectBD()
-                  db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-                  cur= db_connection.cursor()
-                  # Read a single record
-                  sql = "SELECT * FROM inventory WHERE   DATE(Fecha_de_Actualizacion) BETWEEN \'{}\' AND Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['datefilter_inventori'],session['SiteName'],row1,row2)
-                  cur.execute(sql)
-                  data = cur.fetchall()
-                  cur.close()
-                  return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
-                else:
-                  link = connectBD()
-                  db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-                  cur= db_connection.cursor()
-                  # Read a single record
-                  sql = "SELECT * FROM inventory WHERE Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['SiteName'],row1,row2)
-                  cur.execute(sql)
-                  data = cur.fetchall()
-                  cur.close()
-                  return render_template('reportes/t_inventori.html',Datos = session,Infos =data) 
-              else:
-                link = connectBD()
-                db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-                cur= db_connection.cursor()
-                # Read a single record
-                sql = "SELECT * FROM inventory WHERE Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['SiteName'],row1,row2)
-                cur.execute(sql)
-                data = cur.fetchall()
-                cur.close()
-                return render_template('reportes/t_inventori.html',Datos = session,Infos =data) 
-      else: 
-        if request.method == 'GET':
-          session['rowi_inventori']=rowi
-          row1 = int(session['rowi_inventori'])
-          row2 = 50
-        else:
-          row1 = int(session['rowi_inventori'])
-          row2 =50
+              if 'valor_inventori' in session:
+                session.pop('filtro_inventori')
+                session.pop('valor_inventori')
+              if 'datefilter_inventori' in session:
+                session.pop('datefilter_inventori')
+              link = connectBD()
+              db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+              cur= db_connection.cursor()
+              # Read a single record
+              sql = "SELECT * FROM inventory WHERE Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['SiteName'],row1,row2)
+              cur.execute(sql)
+              data = cur.fetchall()
+              cur.close()
+          else:
+            if 'valor_inventori' in session:
+              session.pop('filtro_inventori')
+              session.pop('valor_inventori')
+            if 'datefilter_inventori' in session:
+                session.pop('datefilter_inventori')
+            link = connectBD()
+            db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+            cur= db_connection.cursor()
+            # Read a single record
+            sql = "SELECT * FROM inventory WHERE Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['SiteName'],row1,row2)
+            cur.execute(sql)
+            data = cur.fetchall()
+            cur.close()
+            return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
+      else:
         if 'valor_inventori' in session:
           if len(session['valor_inventori'])>0:
             if 'datefilter_inventori' in session:
@@ -2402,13 +2034,13 @@ def reporte_inventori(rowi):
                 db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
                 cur= db_connection.cursor()
                 # Read a single record
+     
                 sql = "SELECT * FROM inventory WHERE  DATE(Fecha_de_Actualizacion) BETWEEN \'{}\' AND Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['datefilter_inventori'],session['SiteName'],row1,row2)
                 cur.execute(sql)
                 data = cur.fetchall()
                 cur.close()
                 return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
               else:
-                session.pop('datefilter_inventori')
                 link = connectBD()
                 db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
                 cur= db_connection.cursor()
@@ -2445,6 +2077,106 @@ def reporte_inventori(rowi):
               link = connectBD()
               db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
               cur= db_connection.cursor()
+              cur.execute('SELECT * FROM inventory WHERE Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}'.format(session['SiteName'],row1,row2))
+              data = cur.fetchall()
+              cur.close()
+              return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
+          else:
+            if 'datefilter' in request.form:
+              if len(request.form['datefilter'])>0:
+                daterangef=request.form['datefilter']
+                daterange=daterangef.replace("-", "' AND '")
+                session['datefilter_inventori']=daterange
+                link = connectBD()
+                db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+                cur= db_connection.cursor()
+                # Read a single record
+                sql = "SELECT * FROM inventory WHERE   DATE(Fecha_de_Actualizacion) BETWEEN \'{}\' AND Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['datefilter_inventori'],session['SiteName'],row1,row2)
+                cur.execute(sql)
+                data = cur.fetchall()
+                cur.close()
+                return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
+              else:
+                link = connectBD()
+                db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+                cur= db_connection.cursor()
+                # Read a single record
+                sql = "SELECT * FROM inventory WHERE Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['SiteName'],row1,row2)
+                cur.execute(sql)
+                data = cur.fetchall()
+                cur.close()
+                return render_template('reportes/t_inventori.html',Datos = session,Infos =data) 
+            else:
+              link = connectBD()
+              db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+              cur= db_connection.cursor()
+              # Read a single record
+              sql = "SELECT * FROM inventory WHERE Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['SiteName'],row1,row2)
+              cur.execute(sql)
+              data = cur.fetchall()
+              cur.close()
+              return render_template('reportes/t_inventori.html',Datos = session,Infos =data) 
+    else: 
+      if request.method == 'GET':
+        session['rowi_inventori']=rowi
+        row1 = int(session['rowi_inventori'])
+        row2 = 50
+      else:
+        row1 = int(session['rowi_inventori'])
+        row2 =50
+      if 'valor_inventori' in session:
+        if len(session['valor_inventori'])>0:
+          if 'datefilter_inventori' in session:
+            if len(session['datefilter_inventori'])>0:
+              link = connectBD()
+              db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+              cur= db_connection.cursor()
+              # Read a single record
+              sql = "SELECT * FROM inventory WHERE {} LIKE \'%{}%\' AND  DATE(Fecha_de_Actualizacion) BETWEEN \'{}\' AND Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['filtro_inventori'],session['valor_inventori'],session['datefilter_inventori'],session['SiteName'],row1,row2)
+              cur.execute(sql)
+              data = cur.fetchall()
+              cur.close()
+              return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
+            else:
+              session.pop('datefilter_inventori')
+              link = connectBD()
+              db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+              cur= db_connection.cursor()
+              # Read a single record
+              sql = "SELECT * FROM inventory WHERE {} LIKE \'%{}%\' AND Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['filtro_inventori'],session['valor_inventori'],session['SiteName'],row1,row2)
+              cur.execute(sql)
+              data = cur.fetchall()
+              cur.close()
+              return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
+          else:
+            link = connectBD()
+            db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+            cur= db_connection.cursor()
+            # Read a single record
+            sql = "SELECT * FROM inventory WHERE {} LIKE \'%{}%\' AND Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['filtro_inventori'],session['valor_inventori'],session['SiteName'],row1,row2)
+            cur.execute(sql)
+            data = cur.fetchall()
+            cur.close()
+            return render_template('reportes/t_inventori.html',Datos = session,Infos =data) 
+        else:
+          session.pop('filtro_inventori')
+          session.pop('valor_inventori')
+          if 'datefilter_inventori' in session:
+            if len(session['datefilter_inventori'])>0:
+              link = connectBD()
+              db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+              cur= db_connection.cursor()
+              # Read a single record
+              sql = "SELECT * FROM inventory WHERE  DATE(Fecha_de_Actualizacion) BETWEEN \'{}\' AND Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['datefilter_inventori'],session['SiteName'],row1,row2)
+              cur.execute(sql)
+              data = cur.fetchall()
+              cur.close()
+              return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
+            else:
+              session.pop('datefilter_inventori')
+              link = connectBD()
+              db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+              cur= db_connection.cursor()
               # Read a single record
               sql = "SELECT * FROM inventory WHERE Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['SiteName'],row1,row2)
               cur.execute(sql)
@@ -2460,7 +2192,40 @@ def reporte_inventori(rowi):
             cur.execute(sql)
             data = cur.fetchall()
             cur.close()
-            return render_template('reportes/t_inventori.html',Datos = session,Infos =data)         
+            return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
+      else:
+        if 'datefilter_inventori' in session:
+          if len(session['datefilter_inventori'])>0:
+            link = connectBD()
+            db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+            cur= db_connection.cursor()
+            # Read a single record
+            sql = "SELECT * FROM inventory WHERE  DATE(Fecha_de_Actualizacion) BETWEEN \'{}\' AND Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['datefilter_inventori'],session['SiteName'],row1,row2)
+            cur.execute(sql)
+            data = cur.fetchall()
+            cur.close()
+            return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
+          else:
+            session.pop('datefilter_inventori')
+            link = connectBD()
+            db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+            cur= db_connection.cursor()
+            # Read a single record
+            sql = "SELECT * FROM inventory WHERE Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['SiteName'],row1,row2)
+            cur.execute(sql)
+            data = cur.fetchall()
+            cur.close()
+            return render_template('reportes/t_inventori.html',Datos = session,Infos =data)
+        else:
+          link = connectBD()
+          db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
+          cur= db_connection.cursor()
+          # Read a single record
+          sql = "SELECT * FROM inventory WHERE Site =\'{}\' ORDER BY Id_Inventori DESC  LIMIT {}, {}".format(session['SiteName'],row1,row2)
+          cur.execute(sql)
+          data = cur.fetchall()
+          cur.close()
+          return render_template('reportes/t_inventori.html',Datos = session,Infos =data)         
   except Exception as error: 
     flash(str(error))
     return render_template('index.html')
@@ -3173,7 +2938,7 @@ def Files_():
 # data file register 
 @app.route('/CargarDatos',methods=['POST','GET'])
 def uploadFiles():
-  # try:
+  try:
     if 'FullName' in session:
       # get the uploaded file
       file =request.files['datos']
@@ -3184,7 +2949,6 @@ def uploadFiles():
           data=csv.reader(csv_file, delimiter=',')
           i=0
           for row in data:
-            if i >0:
               if row[2] != '#N/A':
                 link = connectBD()
                 db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
@@ -3196,77 +2960,12 @@ def uploadFiles():
                 # your changes.
                 db_connection.commit()
                 cur.close()
-            i+=1 
         flash(str(i)+' Registros Exitoso')
         return redirect('/files')
-      # elif Base=='P&P':
-      #   file.save(os.path.join(UPLOAD_FOLDER, "datos.csv"))
-      #   with open(UPLOAD_FOLDER+'datos.csv',"r", encoding="utf8", errors='ignore') as csv_file:
-      #     data=csv.reader(csv_file, delimiter=',')
-      #     i=0
-      #     for row in data:
-      #       if i >0:
-      #         routeName= row[1]
-      #         FUName=row[4]
-      #         Service_Zone=row[13]
-      #         fk_order= row[15]
-      #         packer=row[5]
-      #         FuOrder=row[14]
-      #         ean=row[7]
-      #         operationGroup=row[12]
-      #         productName=row[8]
-      #         type=row[5]
-      #         deliveryDate=row[0]
-      #         originalQuantity=int(row[11])
-      #         Vendor=row[9]
-      #         CLid=row[3]
-      #         Stop=row[2]
-      #         currentQuantity=int(row[10])
-      #         pendingQuantity=int(originalQuantity)-int(currentQuantity)
-      #         if originalQuantity==currentQuantity:
-      #           status= 'Finished'
-      #         elif currentQuantity>0 and pendingQuantity> 0:
-      #           status= 'In Process'
-      #         else:
-      #           status= 'Pendding'
-      #         link = connectBD()
-      #         db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-      #         cur= db_connection.cursor()
-      #         # Read a single record
-      #         sql = "SELECT * FROM orders WHERE RouteName=%s AND  Fk_order=%s AND FuOrder=%s AND Ean=%s  Limit 1 "
-      #         cur.execute(sql, (routeName,fk_order,FuOrder,ean))
-      #         data = cur.fetchone()
-      #         cur.close()
-      #         if data is None:
-      #           link = connectBD()
-      #           db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-      #           cur= db_connection.cursor()
-      #           # Create a new record
-      #           sql = "INSERT INTO orders (RouteName,FUName,Service_Zone,Fk_order,Packer,FuOrder,Ean,OperationGroup,ProductName,Type,DeliveryDay,OriginalQuantity,Vendedor,CLid,Stop,CurrentQuantity,PendingQuantity,Status,Site) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-      #           cur.execute(sql,(routeName,FUName,Service_Zone,fk_order,packer,FuOrder,ean,operationGroup,productName,type,deliveryDate,originalQuantity,Vendor,CLid,Stop,currentQuantity,pendingQuantity,status,session['SiteName'],))
-      #           # connection is not autocommit by default. So you must commit to save
-      #           # your changes.
-      #           db_connection.commit()
-      #           cur.close()
-      #         else:
-      #           link = connectBD()
-      #           db_connection = pymysql.connect(host=link[0], user=link[1], passwd=link[2], db=link[3], charset="utf8", init_command="set names utf8")
-      #           cur= db_connection.cursor()
-      #           # Create a new record
-      #           sql = "UPDATE orders SET CurrentQuantity = %s, PendingQuantity = %s, Status = %s, Packer = %s WHERE RouteName=%s AND  Fk_order=%s AND FuOrder=%s AND Ean=%s"
-      #           cur.execute(sql,(currentQuantity,pendingQuantity,status,packer,routeName,fk_order,FuOrder,ean,))
-      #           # connection is not autocommit by default. So you must commit to save
-      #           # your changes.
-      #           db_connection.commit()
-      #           cur.close()
-      #       i+=1 
-      #   flash(str(i)+' Registros Exitoso')
-      #   return redirect('/files')
-  # except Exception as error:
- 
-  #   flash(str(error))
-  #   return redirect('/files')
+      
+  except Exception as error:
+    flash(str(error))
+    return redirect('/files')
 
-
-# if __name__=='__main__':
-#     app.run(port = 3000, debug =True)
+if __name__=='__main__':
+    app.run(port = 3000, debug =True)

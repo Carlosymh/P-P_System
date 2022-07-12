@@ -1,9 +1,15 @@
+# def connectBD ():
+#     host = "Muni.mysql.pythonanywhere-services.com"
+#     user = "Muni"
+#     Password= "Yov@1747"
+#     db = "Muni$default"
 
+    # return (host,user,Password, db)
 def connectBD ():
-    host = "aa8jptky0frh68.c9itlnnb7fin.us-west-1.rds.amazonaws.com"
-    port=3306
-    user = "admin"
-    Password= "aa8jptky0frh68"
+    host = "localhost"
+    port=8080
+    user = "root"
+    Password= ""
     db = "muni"
 
     return (host,user,Password, db)

@@ -59,6 +59,7 @@
                         <td>Ean Muni</td>
                         <td>Descripción</td>
                         <td>Cantidad</td>
+                        <td>Botones</td>
                     </tr>
                 </thead>
                 <tbody>
@@ -68,6 +69,8 @@
                       <td>{{row[2]}}</td>
                       <td>{{row[3]}}</td>
                       <td>{{row[4]}}</td>
+                      <td> <a href="/actualizar/{{row[0]}}/{{ReceivingType}}/{{OrderNumber}}" class="Actualizar">Actualizar</a>     <a href="/eliminar/{{row[0]}}/{{ReceivingType}}/{{OrderNumber}}" class="Eliminar">Eliminar</a> </td>
+
                   </tr>
                   {%endfor%}
                 </tbody>

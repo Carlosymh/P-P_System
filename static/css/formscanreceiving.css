@@ -52,8 +52,7 @@ table{
     border-radius:5px;
     border-collapse: collapse;
 }
-table tr{
-
+table tr td{
     padding: 5px 0;
     border-bottom:1px solid#ddd;
 }
@@ -110,4 +109,23 @@ thead,
     color: #fff;
     border: 2px solid #01d4c7;
 
+}
+
+.Actualizar{
+    text-decoration: none;
+    background: green;
+    color: #fff;
+    border: 1px solid #000;
+    padding: 2px;
+    border-radius: 5px;
+    margin-top: auto 10px auto auto ;
+}
+.Eliminar{
+    text-decoration: none;
+    background: red;
+    color: #fff;
+    border: 1px solid #000;
+    padding: 2px;
+    border-radius: 5px;
+    margin-top: auto  auto auto  5px;
 }
